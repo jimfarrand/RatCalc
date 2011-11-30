@@ -1,0 +1,3 @@
+
+Numeric calculation framework that performs calculations using a lazy, infinite
+precision representation to avoid approximation of real numbers.
