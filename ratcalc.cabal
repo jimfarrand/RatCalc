@@ -9,27 +9,29 @@ Category:Testing
 Synopsis:A lazy, infinite precision numeric library
 
 Library
-    Build-Depends:base, containers
-    Exposed-Modules:
-        RatCalc.ConversionUtils,
-        RatCalc.Cauchy,
-        RatCalc.Debug,
-        RatCalc.Estimator,
-        RatCalc.Interval,
-        RatCalc.Limits,
-        RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
-        RatCalc.Representation.DyadicRational, 
-        RatCalc.Representation.DyadicRationalStream, 
-        RatCalc.Representation.SignedBinaryDigit, 
-        RatCalc.Representation.SignedBinaryDigitStream
-    Hs-Source-Dirs: libratcalc-src
+    Build-Depends:      base, containers
+    Exposed-Modules:    RatCalc.ConversionUtils,
+                        RatCalc.Cauchy,
+                        RatCalc.Debug,
+                        RatCalc.Estimator,
+                        RatCalc.Interval,
+                        RatCalc.Limits,
+                        RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
+                        RatCalc.Representation.DyadicRational, 
+                        RatCalc.Representation.DyadicRationalStream, 
+                        RatCalc.Representation.SignedBinaryDigit, 
+                        RatCalc.Representation.SignedBinaryDigitStream
+    Hs-Source-Dirs:     libratcalc-src
+    ghc-options:        -Wall
 
 Executable ratcalc
-    Build-Depends:base
-    Main-Is: Main.hs
-    Hs-Source-Dirs: ratcalc-src
+    Build-Depends:      base
+    Main-Is:            Main.hs
+    Hs-Source-Dirs:     ratcalc-src
+    ghc-options:        -Wall
 
-Executable ratcalc_benchmark_pi
-    Build-Depends:base, RatCalc
-    Main-Is: BenchmarkPi.hs
-    Hs-Source-Dirs: ratcalc-test
+Executable              ratcalc_benchmark_pi
+    Build-Depends:      base, RatCalc
+    Main-Is:            BenchmarkPi.hs
+    Hs-Source-Dirs:     ratcalc-test
+    ghc-options:        -Wall
