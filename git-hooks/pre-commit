@@ -1,0 +1,15 @@
+#!/bin/bash
+
+REPORT=$(git status -s | grep '^.M ' | sed -e 's/^.M\(.*\)/\1/' | while read MODIFIED_FILE ; do
+    if ! grep --quiet Copyright "$MODIFIED_FILE" ; then
+        echo "File $MODIFIED_FILE does not have any copyright information."
+    elif ! grep --quiet "Copyright.*$(date +%Y)" "$MODIFIED_FILE" ; then
+        echo "File $MODIFIED_FILE has out of date copyright information"
+    fi
+done
+)
+
+if [ -n "$REPORT" ] ; then
+    echo "$REPORT"
+    exit 1
+fi

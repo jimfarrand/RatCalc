@@ -1,5 +1,5 @@
 
-module Debug where
+module RatCalc.Debug where
 
 import Data.Set as Set
 import Debug.Trace

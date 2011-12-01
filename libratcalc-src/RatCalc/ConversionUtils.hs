@@ -1,5 +1,5 @@
 
-module ConversionUtils where
+module RatCalc.ConversionUtils where
 
 integerToBits n
     | n >= 0 = reverse (integerToBits' n)

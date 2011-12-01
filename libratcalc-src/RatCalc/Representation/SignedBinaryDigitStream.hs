@@ -1,10 +1,11 @@
 
-module SignedBinaryDigitStream where
+module RatCalc.Representation.SignedBinaryDigitStream where
 
-import SignedBinaryDigit hiding (multiply)
-import qualified SignedBinaryDigit as SBD
-import Estimator
-import Debug
+import RatCalc.Debug
+import RatCalc.Estimator
+import RatCalc.Representation.SignedBinaryDigit hiding (multiply)
+
+import qualified RatCalc.Representation.SignedBinaryDigit as SBD
 
 data SBDS = Ms | Zs | Ps | Mt SBDS | Zt SBDS | Pt SBDS
 

@@ -1,5 +1,5 @@
 
-module SignedBinaryDigit where
+module RatCalc.Representation.SignedBinaryDigit where
 
 data SBD = M | Z | P
 

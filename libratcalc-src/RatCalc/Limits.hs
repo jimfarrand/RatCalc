@@ -1,13 +1,13 @@
 
-module Limits where
+module RatCalc.Limits where
 
 import Prelude hiding (exponent)
 
-import SignedBinaryDigitStream
-import SignedBinaryDigit
-import RealArithmetic as R
-import Interval
-import Cauchy
+import RatCalc.Representation.SignedBinaryDigitStream
+import RatCalc.Representation.SignedBinaryDigit
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation as R
+import RatCalc.Interval
+import RatCalc.Cauchy as Cauchy
 import Data.Ratio
 
 -- TODO: Problem we have here is that we put the real arithmetic calculations inside a Monad

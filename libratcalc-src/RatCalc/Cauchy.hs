@@ -1,11 +1,11 @@
 
-module Cauchy where
+module RatCalc.Cauchy where
 
 -- This kinda overlaps with Estimator
 -- We can unify some of the ideas
 -- (Eg, Estimator should probably return [Interval])
 
-import Interval
+import RatCalc.Interval
 
 data Cauchy a =
     CauchyBelow (Below a)

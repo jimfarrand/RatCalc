@@ -1,0 +1,35 @@
+Name:RatCalc
+Version:0.4.1
+Cabal-Version:  >= 1.8
+License:GPL-3
+License-File:LICENSE
+Author:Jim Farrand
+Homepage:http://xyxyx.org/ratcalc
+Category:Testing
+Synopsis:A lazy, infinite precision numeric library
+
+Library
+    Build-Depends:base, containers
+    Exposed-Modules:
+        RatCalc.ConversionUtils,
+        RatCalc.Cauchy,
+        RatCalc.Debug,
+        RatCalc.Estimator,
+        RatCalc.Interval,
+        RatCalc.Limits,
+        RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
+        RatCalc.Representation.DyadicRational, 
+        RatCalc.Representation.DyadicRationalStream, 
+        RatCalc.Representation.SignedBinaryDigit, 
+        RatCalc.Representation.SignedBinaryDigitStream
+    Hs-Source-Dirs: libratcalc-src
+
+Executable ratcalc
+    Build-Depends:base
+    Main-Is: Main.hs
+    Hs-Source-Dirs: ratcalc-src
+
+Executable ratcalc_benchmark_pi
+    Build-Depends:base, RatCalc
+    Main-Is: BenchmarkPi.hs
+    Hs-Source-Dirs: ratcalc-test

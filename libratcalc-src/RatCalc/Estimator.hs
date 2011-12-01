@@ -1,5 +1,5 @@
 
-module Estimator where
+module RatCalc.Estimator where
 
 class Estimator a where
     toNestedIntervals :: a -> [(Rational, Rational)]

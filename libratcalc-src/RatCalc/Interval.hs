@@ -1,5 +1,5 @@
 
-module Interval where
+module RatCalc.Interval where
 
 data Interval a =
   Interval

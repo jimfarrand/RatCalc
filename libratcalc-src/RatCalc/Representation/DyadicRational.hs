@@ -1,5 +1,5 @@
 
-module DyadicRational where
+module RatCalc.Representation.DyadicRational where
 
 
 -- Normalised so that the numerator is always odd

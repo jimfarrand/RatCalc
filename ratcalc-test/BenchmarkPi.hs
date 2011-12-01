@@ -1,13 +1,15 @@
 
+{-# LANGUAGE DoAndIfThenElse #-}
+
 module Main where
 
-import System.CPUTime
-import RealArithmetic
-import Limits
-import Text.Printf
 import Data.Ratio
+import RatCalc.Estimator
+import RatCalc.Limits as Limits
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation
+import System.CPUTime
 import System.IO
-import Estimator
+import Text.Printf
 
 benchmark v t0 current step =
     do putStr (show current)
