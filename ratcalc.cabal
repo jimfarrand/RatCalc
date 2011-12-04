@@ -22,16 +22,16 @@ Library
                         RatCalc.Representation.SignedBinaryDigit, 
                         RatCalc.Representation.SignedBinaryDigitStream
     Hs-Source-Dirs:     libratcalc-src
-    ghc-options:        -Wall
+    ghc-options:        -Wall -O2
 
 Executable ratcalc
     Build-Depends:      base
     Main-Is:            Main.hs
     Hs-Source-Dirs:     ratcalc-src
-    ghc-options:        -Wall
+    ghc-options:        -Wall -O2
 
-Executable              ratcalc_benchmark_pi
+Executable              ratcalc_benchmark
     Build-Depends:      base, RatCalc
-    Main-Is:            BenchmarkPi.hs
+    Main-Is:            Benchmark.hs
     Hs-Source-Dirs:     ratcalc-test
-    ghc-options:        -Wall
+    ghc-options:        -Wall -O2
