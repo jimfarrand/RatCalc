@@ -1,20 +1,18 @@
 
 module Main where
 
-import SignedBinaryDigitStream
---import MantissaExponentRepresentation
---import ApproximateArithmetic
-import RealArithmetic
-import Estimator
-import Data.Ratio
-import TestUtils
 import Control.Concurrent
-import System.CPUTime
+import Data.Ratio
+import RatCalc.Estimator
+import RatCalc.Limits
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation
+import RatCalc.Representation.SignedBinaryDigitStream
 import ShowTable
+import System.CPUTime
 import System.IO
-import qualified Data.Map as Map
+import TestUtils
 import Text.Printf
-import Limits
+import qualified Data.Map as Map
 
 type TestStats = Map.Map String (Integer, Integer)
 

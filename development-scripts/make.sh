@@ -1,2 +1,2 @@
 #!/bin/bash
-runhaskell ./Setup.hs configure --ghc && runhaskell ./Setup.hs build
+runhaskell ./Setup.hs configure --enable-tests --ghc && runhaskell ./Setup.hs build

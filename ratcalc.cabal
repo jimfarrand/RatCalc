@@ -1,6 +1,6 @@
 Name:RatCalc
 Version:0.4.1
-Cabal-Version:  >= 1.8
+Cabal-Version:  >= 1.9.2
 License:GPL-3
 License-File:LICENSE
 Author:Jim Farrand
@@ -28,10 +28,24 @@ Executable ratcalc
     Build-Depends:      base
     Main-Is:            Main.hs
     Hs-Source-Dirs:     ratcalc-src
-    ghc-options:        -Wall -O2
+    Ghc-Options:        -Wall -O2
+
+Executable              ratcalc_test
+    Build-Depends:      base, containers, RatCalc
+    Main-Is:            RatCalc/RatCalcTest.hs
+    Hs-Source-Dirs:     ratcalc-test
+    Ghc-Options:        -Wall -O2
+
+Test-Suite ratcalc_tests
+    type:               exitcode-stdio-1.0
+    Main-Is:            Test/RatCalc.hs
+    Build-Depends:      base, QuickCheck, HUnit, RatCalc
+    Hs-Source-Dirs:     ratcalc-test
+    Ghc-Options:        -Wall
 
 Executable              ratcalc_benchmark
     Build-Depends:      base, RatCalc
     Main-Is:            Benchmark.hs
     Hs-Source-Dirs:     ratcalc-test
     ghc-options:        -Wall -O2
+
