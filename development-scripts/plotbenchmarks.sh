@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -z "$1" -o -z "$2" ] ; then
+    echo "$0 <type> <output>"
+fi
+
 echo "
 set datafile separator \",\"
 set xdata time
