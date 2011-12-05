@@ -5,12 +5,25 @@ else
     OUT="$1"
 fi
 
+if [ -z "$2" ] ; then
+    RESULTS="benchmark_results.txt"
+else
+    RESULTS="$2"
+fi
+
+if [ -z "$3" ] ; then
+    COUNT="1"
+else
+    COUNT="$3"
+fi
+
 DATE="$(date '+%Y-%m-%d %H:%M')"
 
-RESULTS="benchmark_results.txt"
 COMMIT="$(git log | grep "^commit" | head -n 1 | sed -e 's/^commit //')"
 
-./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Addition       "$DATE" $COMMIT | tee --append "$RESULTS"
-./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Multiplication "$DATE" $COMMIT | tee --append "$RESULTS"
-./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Division       "$DATE" $COMMIT | tee --append "$RESULTS"
-./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Pi             "$DATE" $COMMIT | tee --append "$RESULTS"
+for (( I=0; I<COUNT; I++ )) ; do
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Addition       "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Multiplication "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Division       "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Pi             "$DATE" $COMMIT | tee --append "$RESULTS"
+done
