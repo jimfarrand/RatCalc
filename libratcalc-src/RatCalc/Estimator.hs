@@ -1,8 +1,20 @@
 
+{-# OPTIONS_GHC -XNoMonomorphismRestriction #-}
+
 module RatCalc.Estimator where
+
+import Data.Ratio
 
 class Estimator a where
     toNestedIntervals :: a -> [(Rational, Rational)]
+
+infix 4 ~=, =~, ~=~
+
+(~=) = approxEqual precision
+(=~) = flip (~=)
+(~=~) = approxEqualApprox precision
+
+precision = 1%(2^256)
 
 approxEqual :: Estimator a => Rational -> a -> Rational -> Bool
 approxEqual precision a b = approxEqual' precision (toNestedIntervals a) b

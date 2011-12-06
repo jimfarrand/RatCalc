@@ -19,6 +19,8 @@
 
 -}
 
+{-# OPTIONS_GHC -XFlexibleInstances #-}
+
 module RatCalc.Number.SignedBinaryDigitStreamRepresentation where
 
 import Data.Ratio
@@ -28,7 +30,7 @@ import RatCalc.Estimator
 import RatCalc.Representation.DyadicRational as DR
 import RatCalc.Representation.DyadicRationalStream as DRS
 import RatCalc.Representation.SignedBinaryDigit as SBD
-import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits)
+import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits, divideByInteger)
 
 import qualified RatCalc.Representation.SignedBinaryDigitStream as SBDS
 
@@ -56,66 +58,79 @@ instance Estimator SBDSR where
             mantissaIntervals = toNestedIntervals mantissa
             scale f = map (\(x,y) -> (f*x, f*y))
 
+class ToSBDSR a where
+    toSBDSR :: a -> SBDSR
+
+instance ToSBDSR SBDSR where
+    toSBDSR = id
+
+instance ToSBDSR Integer where
+    toSBDSR = fromInteger
+
+instance (Integral a, ToSBDSR a) => ToSBDSR (Ratio a) where
+    toSBDSR x = toSBDSR (Ratio.numerator x) / toSBDSR (Ratio.denominator x)
+
 scalingFactor :: Integer -> Integer
 scalingFactor n = 2^n
 
 
-infixl 7 ~*#, #*~, ~*~, ~/#, ~/~
-infixl 6 ~+~, ~-~
-infix 4 ~=, =~, ~=~
-
-integer i
-    | i >= 0 = SBDSR (toInteger (length bs)) (SBDS.fromBits bs)
-    | otherwise = SBDSR (toInteger (length bs')) (SBDS.neg (SBDS.fromBits bs'))
-    where
-        bs = integerToBits i
-        bs' = integerToBits (-i)
-
-rational r = integer (Ratio.numerator r) ~/# Ratio.denominator r
+-- infixl 7 ~*#, #*~, ~*~, ~/#, ~/~
+-- infixl 6 ~+~, ~-~
+-- infix 4 ~=, =~, ~=~
 
 equalityPrecision = 1%(2^256)
 
-(~=) :: SBDSR -> Rational -> Bool
-a ~= b = approxEqual equalityPrecision a b
+-- (~=) :: SBDSR -> Rational -> Bool
+-- a ~= b = approxEqual equalityPrecision a b
 
-(=~) :: Rational -> SBDSR -> Bool
-a =~ b = b ~= a
+-- (=~) :: Rational -> SBDSR -> Bool
+-- a =~ b = b ~= a
 
-(~=~) :: SBDSR -> SBDSR -> Bool
-a ~=~ b = approxEqualApprox equalityPrecision a b
+-- (~=~) :: SBDSR -> SBDSR -> Bool
+-- a ~=~ b = approxEqualApprox equalityPrecision a b
 
-SBDSR e0 m0 ~+~ SBDSR e1 m1 =
-       let em = max e0 e1
-        in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (shiftRight m1 (em - e1)))
+instance Num SBDSR where
+    fromInteger i
+        | i >= 0 = SBDSR (toInteger (length bs)) (SBDS.fromBits bs)
+        | otherwise = SBDSR (toInteger (length bs')) (SBDS.neg (SBDS.fromBits bs'))
+        where
+            bs = integerToBits i
+            bs' = integerToBits (-i)
 
-SBDSR e0 m0 ~-~ SBDSR e1 m1 =
-       let em = max e0 e1
-        in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (SBDS.neg (shiftRight m1 (em - e1))))
+    SBDSR e0 m0 + SBDSR e1 m1 =
+           let em = max e0 e1
+            in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (shiftRight m1 (em - e1)))
 
-SBDSR e0 m0 ~*~ SBDSR e1 m1 = normalise $ SBDSR (e0+e1) (SBDS.multiply m0 m1)
+    SBDSR e0 m0 - SBDSR e1 m1 =
+           let em = max e0 e1
+            in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (SBDS.neg (shiftRight m1 (em - e1))))
 
-a ~*# b = a ~*~ integer b
-a #*~ b = integer a ~*~ b
+    SBDSR e0 m0 * SBDSR e1 m1 = normalise $ SBDSR (e0+e1) (SBDS.multiply m0 m1)
 
-SBDSR e m ~/# i = normalise $ SBDSR e (divideByInteger m i)
 
-SBDSR e0 m0 ~/~ SBDSR e1 m1 =
-       let (e1_fix, m1') = fixInput m1
-        in normalise $ convertDRSR_SBDSR ((e0-e1+e1_fix+2), (divideSBDS_DRS m0 m1'))
-    where
-        fixInput = fixInput' 0
-            where
-                fixInput' n x =
-                    case (x0, x1) of
-                        (Z, _) -> fixInput' (n+1) x'
-                        (P,M) -> fixInput' (n+1) (cons P x'')
-                        (M,P) -> fixInput' (n+1) (cons M x'')
-                        _ -> (n, x)
-                    where
-                        x0 = first x
-                        x' = rest x
-                        x1 = first x'
-                        x'' = rest x''
+divideByInteger (SBDSR e m)  i = normalise $ SBDSR e (SBDS.divideByInteger m i)
+
+
+instance Fractional SBDSR where
+    fromRational r = fromInteger (Ratio.numerator r) `divideByInteger` Ratio.denominator r
+
+    SBDSR e0 m0 / SBDSR e1 m1 =
+           let (e1_fix, m1') = fixInput m1
+            in normalise $ convertDRSR_SBDSR ((e0-e1+e1_fix+2), (divideSBDS_DRS m0 m1'))
+        where
+            fixInput = fixInput' 0
+                where
+                    fixInput' n x =
+                        case (x0, x1) of
+                            (Z, _) -> fixInput' (n+1) x'
+                            (P,M) -> fixInput' (n+1) (cons P x'')
+                            (M,P) -> fixInput' (n+1) (cons M x'')
+                            _ -> (n, x)
+                        where
+                            x0 = first x
+                            x' = rest x
+                            x1 = first x'
+                            x'' = rest x''
 
 divideSBDS_DRS :: SBDS -> SBDS -> DRS
 divideSBDS_DRS x y =

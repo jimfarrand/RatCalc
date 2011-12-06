@@ -16,6 +16,8 @@ Library
                         RatCalc.Estimator,
                         RatCalc.Interval,
                         RatCalc.Limits,
+                        RatCalc.Trigonometry,
+                        RatCalc.Number.RealNumber, 
                         RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
                         RatCalc.Representation.DyadicRational, 
                         RatCalc.Representation.DyadicRationalStream, 

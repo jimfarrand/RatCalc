@@ -6,6 +6,7 @@ module Main where
 import Data.Ratio
 import RatCalc.Estimator
 import RatCalc.Limits as Limits
+import RatCalc.Trigonometry as Trig
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import System.CPUTime
 import System.Environment
@@ -60,13 +61,16 @@ largePrime2 = largePrime1 - 2
 
 runTime = 60
 
-benchmarkPi info = benchmarkDigits info runTime Limits.pi
+benchmarkPi info = benchmarkDigits info runTime Trig.pi
 
-benchmarkDivision info = benchmarkCalculations info runTime (\a b -> rational a ~/~ rational b) (diags (allRats ()) (allNonZeroRats ()))
+r :: Rational -> SBDSR
+r = fromRational
 
-benchmarkMultiplication info = benchmarkCalculations info runTime (\a b -> rational a ~*~ rational b) (diags (allRats ()) (allRats ()))
+benchmarkDivision info = benchmarkCalculations info runTime (\a b -> r a / r b) (diags (allRats ()) (allNonZeroRats ()))
 
-benchmarkAddition info = benchmarkCalculations info runTime (\a b -> rational a ~+~ rational b) (diags (allRats ()) (allRats ()))
+benchmarkMultiplication info = benchmarkCalculations info runTime (\a b -> r a * r b) (diags (allRats ()) (allRats ()))
+
+benchmarkAddition info = benchmarkCalculations info runTime (\a b -> r a + r b) (diags (allRats ()) (allRats ()))
 
 runBenchmark "Division" = benchmarkDivision
 runBenchmark "Multiplication" = benchmarkMultiplication

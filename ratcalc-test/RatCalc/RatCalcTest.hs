@@ -5,7 +5,7 @@ import Control.Concurrent
 import Data.Ratio
 import RatCalc.Estimator
 import RatCalc.Limits
-import RatCalc.Number.SignedBinaryDigitStreamRepresentation
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation as SBDSR
 import RatCalc.Representation.SignedBinaryDigitStream
 import ShowTable
 import System.CPUTime
@@ -84,6 +84,12 @@ tests () = interleave
 
 mer = id
 
+i :: Integer -> SBDSR
+i = fromInteger
+
+r :: Rational -> SBDSR
+r = fromRational
+
 testApproxIntegers () = map testApproxInteger (allIntegers ())
 testApproxRationals () = map testApproxRational (allRats ())
 testApproxEquals () = map (uncurry testApproxEqual) (diags (allRats ()) (allRats ()))
@@ -94,15 +100,15 @@ testSubtracts () = map (uncurry testSubtract) (diags (allRats ()) (allRats ()))
 testDivideByIntegers () = map (uncurry testDivideByInteger) (diags (allRats ()) (nonZeroIntegers ()))
 testDivides () = map (uncurry testDivide) (diags (allRats ()) (allNonZeroRats ()))
 
-testApproxInteger = test1 "integer" (\a -> integer a) (\a r -> fromInteger a =~ r)
-testApproxRational = test1 "rational" (\a -> rational a) (\a r -> a =~ r)
+testApproxInteger = test1 "integer" (\a -> i a) (\a r -> fromInteger a =~ r)
+testApproxRational = test1 "rational" (\a -> r a) (\a r -> a =~ r)
 
-testApproxEqual = test2 "~=" (\a b -> (mer $ rational a) ~= b) (\a b r -> if a == b then r else not r)
-testApproxEqualApprox = test2 "~=~" (\a b -> (mer $ rational a) ~=~ (mer $ rational b)) (\a b r -> if a == b then r else not r)
-testMultiply = test2 "~*~" (\a b -> (rational a ~*~ rational b)) (\a b r -> a*b =~ r)
-testAdd = test2 "~+~" (\a b -> (rational a ~+~ rational b)) (\a b r -> a+b =~ r)
-testSubtract = test2 "~-~" (\a b -> (rational a ~-~ rational b)) (\a b r -> a-b =~ r)
-testDivideByInteger = test2 "~/#" (\a b -> (mer $ rational a) ~/# b) (\a b r -> (a / fromInteger b) =~ r)
-testDivide = test2 "~/~" (\a b -> (mer $ rational a) ~/~ rational b) (\a b r -> (a / b) =~ r)
+testApproxEqual = test2 "~=" (\a b -> (r a) ~= b) (\a b r -> if a == b then r else not r)
+testApproxEqualApprox = test2 "~=~" (\a b -> (r a) ~=~ (r b)) (\a b r -> if a == b then r else not r)
+testMultiply = test2 "*" (\a b -> (r a * r b)) (\a b r -> a*b =~ r)
+testAdd = test2 "+" (\a b -> (r a + r b)) (\a b r -> a+b =~ r)
+testSubtract = test2 "-" (\a b -> (r a - r b)) (\a b r -> a-b =~ r)
+testDivideByInteger = test2 "~/#" (\a b -> (r a) `SBDSR.divideByInteger` b) (\a b r -> (a / fromInteger b) =~ r)
+testDivide = test2 "/" (\a b -> (r a) / fromRational b) (\a b r -> (a / b) =~ r)
 
 main = runTests 0 [] emptyStats (tests ())
