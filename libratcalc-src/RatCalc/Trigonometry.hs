@@ -1,4 +1,8 @@
 
+{-
+ - Trigonemtric functions
+ -}
+
 module RatCalc.Trigonometry where
 
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
