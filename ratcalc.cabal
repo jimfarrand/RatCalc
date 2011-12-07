@@ -1,3 +1,20 @@
+--
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2011 Jim Farrand
+-- This build file is free software: you can redistribute it and/or modify
+-- it without restriction
+--
+-- This build file is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+--
+-- The majority of RatCalc is distributed under the terms of the GNU General
+-- Public License as published by the Free Software Foundation, either version
+-- 3 of the License, or (at your option) any later version.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
+
 Name:RatCalc
 Version:0.4.1
 Cabal-Version:  >= 1.9.2
@@ -16,7 +33,9 @@ Library
                         RatCalc.Estimator,
                         RatCalc.Interval,
                         RatCalc.Limits,
+                        RatCalc.Arithmetic
                         RatCalc.Trigonometry,
+                        RatCalc.Exponential,
                         RatCalc.Number.RealNumber, 
                         RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
                         RatCalc.Representation.DyadicRational, 

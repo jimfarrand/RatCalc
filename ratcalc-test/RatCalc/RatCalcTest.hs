@@ -1,9 +1,29 @@
+{-
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2011 Jim Farrand
+--
+-- This program is free software: you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the Free
+-- Software Foundation, either version 3 of the License, or (at your option)
+-- any later version.
+--
+-- This program is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+-- more details.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
+-}
+
+{- Run an infinite number of tests -}
 
 module Main where
 
 import Control.Concurrent
 import Data.Ratio
 import RatCalc.Estimator
+import RatCalc.Arithmetic
 import RatCalc.Limits
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation as SBDSR
 import RatCalc.Representation.SignedBinaryDigitStream
@@ -108,7 +128,7 @@ testApproxEqualApprox = test2 "~=~" (\a b -> (r a) ~=~ (r b)) (\a b r -> if a ==
 testMultiply = test2 "*" (\a b -> (r a * r b)) (\a b r -> a*b =~ r)
 testAdd = test2 "+" (\a b -> (r a + r b)) (\a b r -> a+b =~ r)
 testSubtract = test2 "-" (\a b -> (r a - r b)) (\a b r -> a-b =~ r)
-testDivideByInteger = test2 "~/#" (\a b -> (r a) `SBDSR.divideByInteger` b) (\a b r -> (a / fromInteger b) =~ r)
+testDivideByInteger = test2 "~/#" (\a b -> (r a) /# b) (\a b r -> (a / fromInteger b) =~ r)
 testDivide = test2 "/" (\a b -> (r a) / fromRational b) (\a b r -> (a / b) =~ r)
 
 main = runTests 0 [] emptyStats (tests ())

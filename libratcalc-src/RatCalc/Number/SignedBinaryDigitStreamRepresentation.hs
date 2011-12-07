@@ -1,22 +1,19 @@
-
 {-
-
-    RatCalc - An arbitrary precision numeric computation framework
-    Copyright (C) 2010, 2011 Jim Farrand
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/
-
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2010, 2011 Jim Farrand
+--
+-- This program is free software: you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the Free
+-- Software Foundation, either version 3 of the License, or (at your option)
+-- any later version.
+--
+-- This program is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+-- more details.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
 {-# OPTIONS_GHC -XFlexibleInstances #-}
@@ -26,11 +23,12 @@ module RatCalc.Number.SignedBinaryDigitStreamRepresentation where
 import Data.Ratio
 import Data.Ratio as Ratio
 import RatCalc.ConversionUtils
+import RatCalc.Arithmetic
 import RatCalc.Estimator
 import RatCalc.Representation.DyadicRational as DR
 import RatCalc.Representation.DyadicRationalStream as DRS
 import RatCalc.Representation.SignedBinaryDigit as SBD
-import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits, divideByInteger)
+import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits)
 
 import qualified RatCalc.Representation.SignedBinaryDigitStream as SBDS
 
@@ -108,11 +106,12 @@ instance Num SBDSR where
     SBDSR e0 m0 * SBDSR e1 m1 = normalise $ SBDSR (e0+e1) (SBDS.multiply m0 m1)
 
 
-divideByInteger (SBDSR e m)  i = normalise $ SBDSR e (SBDS.divideByInteger m i)
+instance IntegerDivision SBDSR where
+    (SBDSR e m) /#  i = normalise $ SBDSR e (m /# i)
 
 
 instance Fractional SBDSR where
-    fromRational r = fromInteger (Ratio.numerator r) `divideByInteger` Ratio.denominator r
+    fromRational r = fromInteger (Ratio.numerator r) /# Ratio.denominator r
 
     SBDSR e0 m0 / SBDSR e1 m1 =
            let (e1_fix, m1') = fixInput m1

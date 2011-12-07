@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+# Copyright (C) 2011 Jim Farrand
+# This program is free software: you can redistribute it and/or modify
+# it without restriction
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+
 if [ -z "$1" ] ; then
     OUT=/dev/null
 else
@@ -26,4 +36,7 @@ for (( I=0; I<COUNT; I++ )) ; do
     ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Multiplication "$DATE" $COMMIT | tee --append "$RESULTS"
     ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Division       "$DATE" $COMMIT | tee --append "$RESULTS"
     ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT Pi             "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT E              "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT E^Pi           "$DATE" $COMMIT | tee --append "$RESULTS"
+    ./dist/build/ratcalc_benchmark/ratcalc_benchmark 2>>$OUT E^E            "$DATE" $COMMIT | tee --append "$RESULTS"
 done

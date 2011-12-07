@@ -1,6 +1,29 @@
+{-
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2010, 2011 Jim Farrand
+--
+-- This program is free software: you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the Free
+-- Software Foundation, either version 3 of the License, or (at your option)
+-- any later version.
+--
+-- This program is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+-- more details.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
+-}
+
+{-
+ - Representation real numbers in the range [0,1], using signed binary digit
+ - streams.
+ -}
 
 module RatCalc.Representation.SignedBinaryDigitStream where
 
+import RatCalc.Arithmetic
 import RatCalc.Debug
 import RatCalc.Estimator
 import RatCalc.Representation.SignedBinaryDigit hiding (multiply)
@@ -259,22 +282,22 @@ _multiply x y = average p q
 
 
 -- TODO: Can this be optimised for list ends?
-divideByInteger :: SBDS -> Integer -> SBDS
-divideByInteger x n
-    | n > 0 = divideInteger' x n 0
-    | n < 0 = neg (divideInteger' x (-n) 0)
-    | otherwise = error "divideByInteger: division by zero"
-    where
-        divideInteger' = trace3 "divideInteger" _divideInteger'
-        _divideInteger' x n s
-            | s' >= n            = cons P (divideInteger' x'  n (s'-n))
-            | -n < s' && s' < n  = cons Z (divideInteger' x' n s')
-            | s' <= -n           = cons M (divideInteger' x' n (s'+n))
-            | otherwise = error "bug in divideByInteger"
-            where
-                a = first x
-                x' = rest x
-                s' = 2*s + digitValue a
+instance IntegerDivision SBDS where
+    x /# n
+        | n > 0 = divideInteger' x n 0
+        | n < 0 = neg (divideInteger' x (-n) 0)
+        | otherwise = error "divideByInteger: division by zero"
+        where
+            divideInteger' = trace3 "divideInteger" _divideInteger'
+            _divideInteger' x n s
+                | s' >= n            = cons P (divideInteger' x'  n (s'-n))
+                | -n < s' && s' < n  = cons Z (divideInteger' x' n s')
+                | s' <= -n           = cons M (divideInteger' x' n (s'+n))
+                | otherwise = error "bug in divideByInteger"
+                where
+                    a = first x
+                    x' = rest x
+                    s' = 2*s + digitValue a
 
 normalise :: SBDS -> Int -> (SBDS, Int)
 normalise = normalise' 0

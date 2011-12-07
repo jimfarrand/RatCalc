@@ -1,3 +1,22 @@
+{-
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2011 Jim Farrand
+--
+-- This program is free software: you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the Free
+-- Software Foundation, either version 3 of the License, or (at your option)
+-- any later version.
+--
+-- This program is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+-- more details.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
+-}
+
+{- Run some benchmarks -}
 
 {-# LANGUAGE DoAndIfThenElse #-}
 
@@ -7,6 +26,7 @@ import Data.Ratio
 import RatCalc.Estimator
 import RatCalc.Limits as Limits
 import RatCalc.Trigonometry as Trig
+import RatCalc.Exponential as Exponential
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import System.CPUTime
 import System.Environment
@@ -62,6 +82,9 @@ largePrime2 = largePrime1 - 2
 runTime = 60
 
 benchmarkPi info = benchmarkDigits info runTime Trig.pi
+benchmarkE info = benchmarkDigits info runTime Exponential.e
+benchmarkEToPi info = benchmarkDigits info runTime (Exponential.exponential Trig.pi)
+benchmarkEToE info = benchmarkDigits info runTime (Exponential.exponential Exponential.e)
 
 r :: Rational -> SBDSR
 r = fromRational
@@ -76,6 +99,9 @@ runBenchmark "Division" = benchmarkDivision
 runBenchmark "Multiplication" = benchmarkMultiplication
 runBenchmark "Addition" = benchmarkAddition
 runBenchmark "Pi" = benchmarkPi
+runBenchmark "E" = benchmarkE
+runBenchmark "E^Pi" = benchmarkEToPi
+runBenchmark "E^E" = benchmarkEToE
 
 main =
     do args <- getArgs
