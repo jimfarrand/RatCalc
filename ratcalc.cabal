@@ -36,7 +36,7 @@ Library
                         RatCalc.Arithmetic
                         RatCalc.Trigonometry,
                         RatCalc.Exponential,
-                        RatCalc.Number.RealNumber, 
+                        RatCalc.Number.ExactReal, 
                         RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
                         RatCalc.Representation.DyadicRational, 
                         RatCalc.Representation.DyadicRationalStream, 

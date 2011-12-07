@@ -1,3 +1,20 @@
+{-
+-- RatCalc - An infinite precision numeric computation framework
+-- Copyright (C) 2010, 2011 Jim Farrand
+--
+-- This program is free software: you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the Free
+-- Software Foundation, either version 3 of the License, or (at your option)
+-- any later version.
+--
+-- This program is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+-- more details.
+--
+-- You should have received a copy of the GNU General Public License along with
+-- this program.  If not, see <http://www.gnu.org/licenses/
+-}
 
 module RatCalc.Limits where
 
@@ -5,8 +22,8 @@ import Prelude hiding (exponent)
 
 import RatCalc.Representation.SignedBinaryDigitStream
 import RatCalc.Representation.SignedBinaryDigit
-import RatCalc.Number.RealNumber
-import RatCalc.Number.SignedBinaryDigitStreamRepresentation as R
+import RatCalc.Number.ExactReal
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation as SBDSR
 import RatCalc.Interval
 import RatCalc.Cauchy as Cauchy
 import Data.Ratio
@@ -15,12 +32,12 @@ import Data.Ratio
 -- Which seemed like a good idea at the time, but probably isn't
 -- If we refactor that, we can probably make this code work fairly easily
 
-limit :: ToSBDSR a => [Interval a] -> RealNumber
-limit is = RSBDSR $ limit' (max lbe ube) r
+limit :: ToSBDSR a => [Interval a] -> ExactReal
+limit is = fromSBDSR $ limit' (max lbe ube) r
   where
     (r @ ((Interval { lowerBound = lb, upperBound = ub }):_)) = map (mapInterval toSBDSR) is
-    nlb = R.normalise lb
-    nub = R.normalise ub
+    nlb = SBDSR.normalise lb
+    nub = SBDSR.normalise ub
     lbe = exponent nlb
     ube = exponent nub
 

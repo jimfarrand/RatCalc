@@ -23,13 +23,13 @@
 module RatCalc.Trigonometry where
 
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
-import RatCalc.Number.RealNumber
+import RatCalc.Number.ExactReal
 import RatCalc.Cauchy as Cauchy
 import RatCalc.Limits
 import RatCalc.Arithmetic
 import Data.Ratio
 
-arctan :: (Ord a, Num a, IntegerDivision a, ToSBDSR a) => a -> RealNumber
+arctan :: (Ord a, Num a, IntegerDivision a, ToSBDSR a) => a -> ExactReal
 arctan x = limit (Cauchy.ranges (converging (arctanIntervals x)))
     where
         arctanIntervals x = arctan' True x 1 0

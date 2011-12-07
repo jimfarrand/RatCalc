@@ -21,25 +21,30 @@
  - binary digit stream representation.
  -}
 
-module RatCalc.Number.RealNumber where
+module RatCalc.Number.ExactReal
+    ( ExactReal
+    , fromSBDSR
+    ) where
 
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import RatCalc.Estimator
 import RatCalc.Arithmetic
 import Data.Ratio
 
-data RealNumber = RRational Rational | RSBDSR SBDSR
+data ExactReal = RRational Rational | RSBDSR SBDSR
     deriving (Show)
 
-instance Eq RealNumber where
+fromSBDSR = RSBDSR
+
+instance Eq ExactReal where
     RRational a == RRational b = a == b
     a == b = toSBDSR a == toSBDSR b
 
-instance Ord RealNumber where
+instance Ord ExactReal where
     compare (RRational a) (RRational b) = compare a b
     compare a b = compare (toSBDSR a) (toSBDSR b)
 
-instance Num RealNumber where
+instance Num ExactReal where
     fromInteger = RRational . fromInteger
 
     RRational a + RRational b = RRational (a+b)
@@ -57,17 +62,17 @@ instance Num RealNumber where
     RRational a * (RSBDSR b) = RSBDSR (fromRational a * b)
     RSBDSR a * (RSBDSR b) = RSBDSR (a*b)
 
-instance IntegerDivision RealNumber where
+instance IntegerDivision ExactReal where
     (RRational a) /# b = RRational (a * (1%b))
     (RSBDSR a) /# b = RSBDSR (a /# b)
 
-instance Fractional RealNumber where
+instance Fractional ExactReal where
     fromRational = RRational
 
-instance ToSBDSR RealNumber where
+instance ToSBDSR ExactReal where
     toSBDSR (RSBDSR n) = n
     toSBDSR (RRational n) = fromRational n
 
-instance Estimator RealNumber where
+instance Estimator ExactReal where
     toNestedIntervals (RRational a) = [(a,a)]
     toNestedIntervals (RSBDSR a) = toNestedIntervals a
