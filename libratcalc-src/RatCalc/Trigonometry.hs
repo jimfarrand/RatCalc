@@ -30,7 +30,7 @@ import RatCalc.Arithmetic
 import Data.Ratio
 
 arctan :: (Ord a, Num a, IntegerDivision a, ToSBDSR a) => a -> ExactReal
-arctan x = limit (Cauchy.ranges (converging (arctanIntervals x)))
+arctan x = limitsToExactReal (Cauchy.ranges (converging (arctanIntervals x)))
     where
         arctanIntervals x = arctan' True x 1 0
           where
@@ -43,7 +43,7 @@ arctan x = limit (Cauchy.ranges (converging (arctanIntervals x)))
                       else (negate t)
                 a' = a + v
 
-pi = (24 * arctan (r (1%8))) + (8 * arctan (r (1%57)) + (4 * arctan (r (1%239))))
+pi = 24*arctan (r (1%8)) + 8*arctan (r (1%57)) + 4*arctan (r (1%239))
     where
         r :: Rational -> Rational
         r = id

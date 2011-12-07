@@ -16,24 +16,20 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
-module RatCalc.Limits where
+module RatCalc.Limits
+    ( limitsToExactReal
+    ) where
 
 import Prelude hiding (exponent)
 
-import RatCalc.Representation.SignedBinaryDigitStream
-import RatCalc.Representation.SignedBinaryDigit
+import RatCalc.Interval
 import RatCalc.Number.ExactReal
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation as SBDSR
-import RatCalc.Interval
-import RatCalc.Cauchy as Cauchy
-import Data.Ratio
+import RatCalc.Representation.SignedBinaryDigit
+import RatCalc.Representation.SignedBinaryDigitStream
 
--- TODO: Problem we have here is that we put the real arithmetic calculations inside a Monad
--- Which seemed like a good idea at the time, but probably isn't
--- If we refactor that, we can probably make this code work fairly easily
-
-limit :: ToSBDSR a => [Interval a] -> ExactReal
-limit is = fromSBDSR $ limit' (max lbe ube) r
+limitsToExactReal :: ToSBDSR a => [Interval a] -> ExactReal
+limitsToExactReal is = fromSBDSR $ limitsToExactReal' (max lbe ube) r
   where
     (r @ ((Interval { lowerBound = lb, upperBound = ub }):_)) = map (mapInterval toSBDSR) is
     nlb = SBDSR.normalise lb
@@ -41,17 +37,17 @@ limit is = fromSBDSR $ limit' (max lbe ube) r
     lbe = exponent nlb
     ube = exponent nub
 
--- limit' :: Cauchy a b => Integer -> Stream (Interval a) -> SignedBinaryDigitStreamRepresentation
-limit' :: Integer -> [Interval SBDSR] -> SBDSR
-limit' e (i0:is) =
+limitsToExactReal' :: Integer -> [Interval SBDSR] -> SBDSR
+limitsToExactReal' e (i0:is) =
   SBDSR
     e
-    (bananaBracketSBDSR e lb (limit' e is) ub)
+    (bananaBracketSBDSR e lb (limitsToExactReal' e is) ub)
   where
     lb = lowerBound i0
     ub = upperBound i0
+limitsToExactReal' _ [] = error "limitsToExactReal'"
 
--- bananaBracketSBDSR :: Integer -> SBDSR -> SBDSR -> SBDSR -> SBDS
+bananaBracketSBDSR :: Integer -> SBDSR -> SBDSR -> SBDSR -> SBDS
 bananaBracketSBDSR e x y z  = bananaBracketSBDS (shiftN mx (e-ex)) (shiftN my (e-ey)) (shiftN mz (e-ez))
   where
       ex = exponent x
@@ -61,7 +57,7 @@ bananaBracketSBDSR e x y z  = bananaBracketSBDS (shiftN mx (e-ex)) (shiftN my (e
       my = mantissa y
       mz = mantissa z
 
--- bananaBracketSBDS :: SBDS -> SBDS -> SBDS -> SBDS
+bananaBracketSBDS :: SBDS -> SBDS -> SBDS -> SBDS
 bananaBracketSBDS x y z
   | r_lo' > s_hi' = error "bananaBracketSBDS: r_lo > s_hi"
   | (r_lo' >= -4) && (s_hi' <= 4) =

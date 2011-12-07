@@ -34,7 +34,7 @@ import RatCalc.Arithmetic
 
 e = exponential (1 :: Rational)
 
-exponential x = limit (exponentialIntervals x)
+exponential x = limitsToExactReal (exponentialIntervals x)
 
 exponentialIntervals :: (Estimator a, IntegerDivision a, Ord a, Num a) => a -> [Interval a] 
 exponentialIntervals x = map (\(a,b) -> makeInterval a (a+b)) (exponentialApproximations x)
