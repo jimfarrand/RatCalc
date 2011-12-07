@@ -18,7 +18,7 @@
 
 {- Implementation of exponetial, logarithm and power functions -}
 
-module RatCalc.Exponential
+module RatCalc.Functions.Exponential
     ( exponential
     , e
     ) where

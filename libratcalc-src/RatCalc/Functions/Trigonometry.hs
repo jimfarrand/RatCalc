@@ -20,7 +20,7 @@
  - Trigonemtric functions
  -}
 
-module RatCalc.Trigonometry where
+module RatCalc.Functions.Trigonometry where
 
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import RatCalc.Number.ExactReal

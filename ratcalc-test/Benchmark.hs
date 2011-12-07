@@ -24,9 +24,8 @@ module Main where
 
 import Data.Ratio
 import RatCalc.Estimator
-import RatCalc.Limits as Limits
-import RatCalc.Trigonometry as Trig
-import RatCalc.Exponential as Exponential
+import RatCalc.Functions.Trigonometry as Trig
+import RatCalc.Functions.Exponential as Exponential
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import System.CPUTime
 import System.Environment
