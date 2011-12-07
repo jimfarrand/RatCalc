@@ -30,4 +30,4 @@ if [ -n "$REPORT" ] ; then
     exit 1
 fi
 
-./dist/build/ratcalc_tests/ratcalc_tests
+./development-scripts/make.sh && ./dist/build/ratcalc_tests/ratcalc_tests
