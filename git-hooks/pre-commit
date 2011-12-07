@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/
 
-REPORT=$(git status -s | grep '^M. ' | sed -e 's/^M. \(.*\)/\1/' | while read MODIFIED_FILE ; do
+REPORT=$(git status -s | grep '^[MA]. ' | sed -e 's/^[MA]. \(.*\)/\1/' | while read MODIFIED_FILE ; do
     if ! git grep --cached --quiet Copyright "$MODIFIED_FILE" ; then
         echo "File $MODIFIED_FILE does not have any copyright information."
     elif ! git grep --cached --quiet "Copyright.*$(date +%Y)" "$MODIFIED_FILE" ; then
