@@ -51,9 +51,9 @@ Executable ratcalc
     Hs-Source-Dirs:     ratcalc-src
     Ghc-Options:        -Wall -O2
 
-Executable              ratcalc_test
+Executable              ratcalc_infinite_tests
     Build-Depends:      base, containers, RatCalc
-    Main-Is:            RatCalc/RatCalcTest.hs
+    Main-Is:            Test/RatCalc/RatCalcInfiniteTests.hs
     Hs-Source-Dirs:     ratcalc-test
     Ghc-Options:        -Wall -O2
 
