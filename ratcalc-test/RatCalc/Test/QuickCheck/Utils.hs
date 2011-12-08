@@ -16,24 +16,21 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
-{- Bring together all tests into an easily runnable suite. -}
+{-# OPTIONS_GHC -XExistentialQuantification  #-}
 
-{-# OPTIONS_GHC -XDoAndIfThenElse #-}
+module RatCalc.Test.QuickCheck.Utils where
 
-import qualified Test.RatCalc.QuickChecks as QuickChecks
-import qualified Test.RatCalc.UnitTests as UnitTests
-import Test.HUnit
-import System.Exit
+import Test.QuickCheck
 
-main =
-    do putStrLn "Running unit tests..."
-       count <- UnitTests.runTests
-       if errors count > 0 then
-         exitWith (ExitFailure 1)
-       else if failures count > 0 then
-         exitWith (ExitFailure 2)
-       else
-         return ()
-       putStrLn "Running quickchecks..."
-       QuickChecks.runTests 100
+data QC = forall a. Testable a => QC a
+
+check :: Args -> Bool -> QC -> IO ()
+check config verbose (QC a) = (if verbose then verboseCheckWith config else quickCheckWith config) a
+
+checkAll :: Args -> Bool -> [QC] -> IO ()
+checkAll _ _ [] = return ()
+checkAll config verbose (h:t) = check config verbose h >> checkAll config verbose t
+
+runQuickChecks count verbose checks =
+       checkAll (stdArgs { maxSuccess = count }) False checks
 

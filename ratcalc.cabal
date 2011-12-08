@@ -51,24 +51,24 @@ Executable ratcalc
     Build-Depends:      base
     Main-Is:            Main.hs
     Hs-Source-Dirs:     ratcalc-src
-    Ghc-Options:        -Wall -O2
+    Ghc-Options:        -W -O2
 
 Executable              ratcalc_infinite_tests
     Build-Depends:      base, containers, RatCalc
-    Main-Is:            Test/RatCalc/RatCalcInfiniteTests.hs
+    Main-Is:            RatCalc/RunInfiniteTests.hs
     Hs-Source-Dirs:     ratcalc-test
-    Ghc-Options:        -Wall -O2
+    Ghc-Options:        -W -O2
 
 Test-Suite ratcalc_tests
     type:               exitcode-stdio-1.0
-    Main-Is:            Test/RatCalc.hs
+    Main-Is:            RatCalc/RunAllTests.hs
     Build-Depends:      base, QuickCheck, HUnit, RatCalc
     Hs-Source-Dirs:     ratcalc-test
-    Ghc-Options:        -Wall
+    Ghc-Options:        -W
 
 Test-Suite ratcalc_quickchecks
     type:               exitcode-stdio-1.0
-    Main-Is:            Test/RatCalc/QuickChecks.hs
+    Main-Is:            RatCalc/RunQuickChecks.hs
     Build-Depends:      base, QuickCheck, HUnit, RatCalc
     Hs-Source-Dirs:     ratcalc-test
     Ghc-Options:        -Wall

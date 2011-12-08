@@ -16,27 +16,14 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
-{- Unit tests for everything -}
+{- Quickcheck tests -}
 
-{-# OPTIONS_GHC -XDoAndIfThenElse #-}
+module RatCalc.QuickChecks where
 
-module Test.RatCalc.UnitTests where
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation.Tests as SBDSR
 
-import Test.HUnit
-import System.Exit
-import qualified Test.RatCalc.Symbolic.Expression as Expression
-
-tests =
-    TestList
-        [ TestLabel "Test.RacCalc.Symbolic.Expression" Expression.tests
+quickChecks =
+    concat
+        [ SBDSR.quickChecks
         ]
 
-runTests = runTestTT tests
-
-main = do count <- runTests
-          if errors count > 0 then
-            exitWith (ExitFailure 1)
-          else if failures count > 0 then
-            exitWith (ExitFailure 2)
-          else
-            return ()

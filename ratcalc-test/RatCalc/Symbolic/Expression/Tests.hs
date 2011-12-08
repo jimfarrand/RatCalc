@@ -18,7 +18,7 @@
 
 {- Tests for expressions -}
 
-module Test.RatCalc.Symbolic.Expression where
+module RatCalc.Symbolic.Expression.Tests where
 
 import Test.HUnit
 import RatCalc.Symbolic.Expression
