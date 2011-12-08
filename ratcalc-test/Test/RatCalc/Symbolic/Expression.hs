@@ -23,7 +23,7 @@ module Test.RatCalc.Symbolic.Expression where
 import Test.HUnit
 import RatCalc.Symbolic.Expression
 
-testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) (fromString defaultOperators s) r)
+testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) r (fromString s))
 
 tests =
     TestList
@@ -33,4 +33,7 @@ tests =
         , TestLabel "1+2*3" $ testParse "1+2*3" (Application (Symbol "+") [Number 1, Application (Symbol "*") [Number 2, Number 3]])
         , TestLabel "1*2+3" $ testParse "1*2+3" (Application (Symbol "+") [Application (Symbol "*") [Number 1, Number 2], Number 3])
         , TestLabel "1*2*3" $ testParse "1*2*3" (Application (Symbol "*") [Application (Symbol "*") [Number 1, Number 2], Number 3])
+        , TestLabel "1*2^3^4/5" $ testParse "1*2^3^4/5" (Application (Symbol "/") [Application (Symbol "*") [Number 1, Application (Symbol "^") [Number 2, Application (Symbol "^") [Number 3, Number 4]]], Number 5])
         ]
+
+-- "1*2^3^4/5" <- I think this should parse as 1*(2^(3^4))/5 but doesn't

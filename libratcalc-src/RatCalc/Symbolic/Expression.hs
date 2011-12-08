@@ -20,116 +20,61 @@
 
 module RatCalc.Symbolic.Expression where
 
-import Text.ParserCombinators.ReadP as ReadP
 import Data.Char
+import Data.List as List
 import Data.Map (Map)
+import Data.Ratio
 import Data.Set (Set)
+import Text.Parsec
+import Text.Parsec.Expr
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 data Expression =
-      Number Rational
+      Number Integer
     | Symbol String
     | Application Expression [Expression]
-    deriving (Eq, Show)
+    deriving (Eq)
 
 
-data Operator =
-    Operator
-        { operatorSymbol :: String
-        , operatorAssociativity :: Associativity
-        , operatorPrecedence :: Int
-        }
-    deriving (Eq, Ord, Show)
+instance Show Expression where
+    show (Number x) = show x
+    show (Symbol s) = s
+    show (Application o e) = "(" ++ (concat $ List.intersperse (show o) (map show e)) ++ ")"
 
-data Associativity = LeftAssociative | NonAssociative | RightAssociative
-    deriving (Eq, Ord, Show)
+fromString s =
+    case runParser expressionParser () "" s of
+        Right x -> x
 
-fromString :: [Operator] -> String -> Expression
-fromString operators s =
-    case readP_to_S (parseExpression operators operators) s of
-        [(e, "")] -> e
-        _ -> error $ "parseExpression: parse failed: " ++ s
+expressionParser = buildExpressionParser table termParser
 
-defaultOperators = -- operators
-    [ Operator
-        { operatorSymbol = "^"
-        , operatorAssociativity = RightAssociative
-        , operatorPrecedence = 8
-        }
-    , Operator
-        { operatorSymbol = "*"
-        , operatorAssociativity = LeftAssociative
-        , operatorPrecedence = 7
-        }
-    , Operator
-        { operatorSymbol = "/"
-        , operatorAssociativity = LeftAssociative
-        , operatorPrecedence = 7
-        }
-    , Operator
-        { operatorSymbol = "+"
-        , operatorAssociativity = RightAssociative
-        , operatorPrecedence = 6
-        }
-    , Operator
-        { operatorSymbol = "-"
-        , operatorAssociativity = RightAssociative
-        , operatorPrecedence = 6
-        }
+table :: Monad m => OperatorTable String () m Expression
+table =
+    [ [ binaryOperator "^" AssocRight ]
+    , [ binaryOperator "*" AssocLeft, binaryOperator "/" AssocLeft ]
+    , [ binaryOperator "+" AssocRight ]
     ]
 
-parseExpression allOperators currentOperators =
-    do leftTerm <- parseTerm
-       parseExpression' allOperators currentOperators leftTerm
+binaryOperator name assoc =
+    Infix
+        ( do string name
+             return (\l r -> Application (Symbol name) [l, r])
+        ) assoc
 
-parseExpression' allOperators currentOperators leftTerm =
-    parseOperationExpression allOperators currentOperators leftTerm <++ return leftTerm
+termParser = numberParser <|> parenthesisedParser expressionParser
 
-parseOperationExpression allOperators currentOperators leftTerm =
-    do o <- parseOperation currentOperators
-       case operatorAssociativity o of
-         LeftAssociative  -> do rightTerm <- parseExpression allOperators (filter (\o' -> operatorPrecedence o' > operatorPrecedence o) currentOperators)
-                                parseExpression' allOperators allOperators $ Application (Symbol (operatorSymbol o)) [leftTerm, rightTerm]
-
-         RightAssociative -> do rightTerm <- parseExpression allOperators (filter (\o' -> operatorPrecedence o' >= operatorPrecedence o) currentOperators)
-                                parseExpression' allOperators allOperators $ Application (Symbol (operatorSymbol o)) [leftTerm, rightTerm]
-
-parseOperation operators =
-    choice (map parseOperation' operators)
-
-parseOperation' o =
-    do string (operatorSymbol o)
-       return o
-
-
-parseOperator os = choice (map parseOperator' os)
-    where
-        parseOperator' o = string (operatorSymbol o)
-
-parseBracketedExpression allOperators =
+parenthesisedParser f =
     do char '('
-       e <- parseExpression allOperators allOperators
+       e <- f
        char ')'
        return e
 
-parseTerm = parseNumber
+numberParser =
+    do digits <- many1 digit
+       let digits' = map (\x -> ord x - ord '0') digits
+        in return $ Number $ digitsToNumber 10 0 digits'
 
-parseNumber =
-    do i <- parseInteger
-       return $ Number $ fromInteger i
-
-parseInteger :: ReadP Integer
-parseInteger =
-    do digits <- many1 parseDigit
-       return $ combineDigits 0 digits
-    where
-        combineDigits :: Integer -> [Int] -> Integer
-        combineDigits a [] = a
-        combineDigits a (h:t) = combineDigits (10*a + toInteger h) t
-
-parseDigit :: ReadP Int
-parseDigit =
-    do x <- satisfy (\x -> x >= '0' && x <= '9')
-       return $ ord x - ord '0'
+digitsToNumber :: Integer -> Integer -> [Int] -> Integer
+digitsToNumber base a (h:t) = digitsToNumber base (base*a + toInteger h) t
+digitsToNumber _ a [] = a
 

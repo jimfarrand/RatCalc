@@ -26,7 +26,7 @@ Category:Testing
 Synopsis:A lazy, infinite precision numeric library
 
 Library
-    Build-Depends:      base, containers
+    Build-Depends:      base, containers, parsec
     Exposed-Modules:
                         RatCalc.Arithmetic,
                         RatCalc.Cauchy,
