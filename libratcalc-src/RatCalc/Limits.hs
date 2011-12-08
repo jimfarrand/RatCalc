@@ -18,6 +18,7 @@
 
 module RatCalc.Limits
     ( limitsToExactReal
+    , digitsToLimits
     ) where
 
 import Prelude hiding (exponent)
@@ -133,3 +134,20 @@ bananaBracketSBDS' sig (r_lo, r_hi) (s_lo, s_hi) outx outz x y z
     (r'@(r_lo', r_hi')) = (r_lo + (av+1)*sig, r_hi + (av-1)*sig)
     (s'@(s_lo', s_hi')) = (s_lo + (cv+1)*sig, s_hi + (cv-1)*sig)
 
+
+digitsToLimits :: Integer -> Integer -> [Integer] -> [Interval Rational]
+digitsToLimits base digit = digitsToLimits' 0 (fromInteger base) (fromInteger digit)
+    where
+        digitsToLimits' :: Rational -> Rational -> Rational -> [Integer] -> [Interval Rational]
+        digitsToLimits' acc base digit (h:t) = makeInterval (acc' - digit2) (acc' + digit2) : digitsToLimits' acc' base (digit/base) t
+            where
+                acc' = acc + digit*fromInteger h
+                digit2 = digit / 2
+
+liouvilleConstant = limitsToExactReal (digitsToLimits 10 1 (liouvilleDigits ()))
+
+liouvilleDigits () = liouvilleDigits' 0 1 2
+    where
+        liouvilleDigits' k f g
+            | k /= f = 0 : liouvilleDigits' (k+1) f g
+            | otherwise = 1 : liouvilleDigits' (k+1) (f*g) (g+1)

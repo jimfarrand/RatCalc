@@ -66,6 +66,13 @@ Test-Suite ratcalc_tests
     Hs-Source-Dirs:     ratcalc-test
     Ghc-Options:        -Wall
 
+Test-Suite ratcalc_quickchecks
+    type:               exitcode-stdio-1.0
+    Main-Is:            Test/RatCalc/QuickChecks.hs
+    Build-Depends:      base, QuickCheck, HUnit, RatCalc
+    Hs-Source-Dirs:     ratcalc-test
+    Ghc-Options:        -Wall
+
 Executable              ratcalc_benchmark
     Build-Depends:      base, RatCalc
     Main-Is:            Benchmark.hs
