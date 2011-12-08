@@ -26,7 +26,7 @@ import Test.HUnit
 import System.Exit
 
 main =
-    do QuickChecks.main
+    do putStrLn "Running unit tests..."
        count <- UnitTests.runTests
        if errors count > 0 then
          exitWith (ExitFailure 1)
@@ -34,3 +34,6 @@ main =
          exitWith (ExitFailure 2)
        else
          return ()
+       putStrLn "Running quickchecks..."
+       QuickChecks.runTests 100
+
