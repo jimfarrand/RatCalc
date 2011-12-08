@@ -24,10 +24,11 @@ module Test.RatCalc.UnitTests where
 
 import Test.HUnit
 import System.Exit
+import qualified Test.RatCalc.Symbolic.Expression as Expression
 
 tests =
     TestList
-        [
+        [ TestLabel "Test.RacCalc.Symbolic.Expression" Expression.tests
         ]
 
 runTests = runTestTT tests

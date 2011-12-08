@@ -27,21 +27,23 @@ Synopsis:A lazy, infinite precision numeric library
 
 Library
     Build-Depends:      base, containers
-    Exposed-Modules:    RatCalc.ConversionUtils,
+    Exposed-Modules:
+                        RatCalc.Arithmetic,
                         RatCalc.Cauchy,
+                        RatCalc.ConversionUtils,
                         RatCalc.Debug,
                         RatCalc.Estimator,
+                        RatCalc.Functions.Exponential,
+                        RatCalc.Functions.Trigonometry,
                         RatCalc.Interval,
                         RatCalc.Limits,
-                        RatCalc.Arithmetic
-                        RatCalc.Functions.Trigonometry,
-                        RatCalc.Functions.Exponential,
-                        RatCalc.Number.ExactReal, 
-                        RatCalc.Number.SignedBinaryDigitStreamRepresentation, 
-                        RatCalc.Representation.DyadicRational, 
-                        RatCalc.Representation.DyadicRationalStream, 
-                        RatCalc.Representation.SignedBinaryDigit, 
-                        RatCalc.Representation.SignedBinaryDigitStream
+                        RatCalc.Number.ExactReal,
+                        RatCalc.Number.SignedBinaryDigitStreamRepresentation,
+                        RatCalc.Representation.DyadicRational,
+                        RatCalc.Representation.DyadicRationalStream,
+                        RatCalc.Representation.SignedBinaryDigit,
+                        RatCalc.Representation.SignedBinaryDigitStream,
+                        RatCalc.Symbolic.Expression
     Hs-Source-Dirs:     libratcalc-src
     ghc-options:        -Wall -O2
 
