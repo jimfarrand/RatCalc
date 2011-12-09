@@ -21,9 +21,11 @@
 module RatCalc.QuickChecks where
 
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation.Tests as SBDSR
+import RatCalc.Symbolic.Expression.Tests as Expression
 
 quickChecks =
     concat
         [ SBDSR.quickChecks
+        , Expression.quickChecks
         ]
 

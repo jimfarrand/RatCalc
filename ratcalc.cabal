@@ -45,7 +45,7 @@ Library
                         RatCalc.Representation.SignedBinaryDigitStream,
                         RatCalc.Symbolic.Expression
     Hs-Source-Dirs:     libratcalc-src
-    ghc-options:        -Wall -O2
+    ghc-options:        -W -O2
 
 Executable ratcalc
     Build-Depends:      base
@@ -64,18 +64,18 @@ Test-Suite ratcalc_tests
     Main-Is:            RatCalc/RunAllTests.hs
     Build-Depends:      base, QuickCheck, HUnit, RatCalc
     Hs-Source-Dirs:     ratcalc-test
-    Ghc-Options:        -W
+    Ghc-Options:        -W -fno-warn-orphans
 
 Test-Suite ratcalc_quickchecks
     type:               exitcode-stdio-1.0
     Main-Is:            RatCalc/RunQuickChecks.hs
     Build-Depends:      base, QuickCheck, HUnit, RatCalc
     Hs-Source-Dirs:     ratcalc-test
-    Ghc-Options:        -Wall
+    Ghc-Options:        -W -fno-warn-orphans
 
 Executable              ratcalc_benchmark
     Build-Depends:      base, RatCalc
     Main-Is:            Benchmark.hs
     Hs-Source-Dirs:     ratcalc-test
-    ghc-options:        -Wall -O2
+    ghc-options:        -W -O2 -fno-warn-orphans
 

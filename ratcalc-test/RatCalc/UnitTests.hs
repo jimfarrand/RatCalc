@@ -28,7 +28,7 @@ import qualified RatCalc.Symbolic.Expression.Tests as Expression
 
 tests =
     TestList
-        [ TestLabel "Test.RacCalc.Symbolic.Expression" Expression.tests
+        [ TestLabel "Test.RacCalc.Symbolic.Expression" Expression.unitTests
         ]
 
 runTests = runTestTT tests

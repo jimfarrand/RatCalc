@@ -45,6 +45,7 @@ instance Show Expression where
 fromString s =
     case runParser expressionParser () "" s of
         Right x -> x
+        Left e -> error $ "parse failed \"" ++ s ++ "\": " ++ show e
 
 expressionParser = buildExpressionParser table termParser
 
@@ -69,7 +70,14 @@ parenthesisedParser f =
        char ')'
        return e
 
-numberParser =
+numberParser = negativeNumberParser <|> positiveNumberParser
+
+negativeNumberParser =
+    do char '-'
+       Number n <- positiveNumberParser
+       return $ Number (-n)
+
+positiveNumberParser =
     do digits <- many1 digit
        let digits' = map (\x -> ord x - ord '0') digits
         in return $ Number $ digitsToNumber 10 0 digits'

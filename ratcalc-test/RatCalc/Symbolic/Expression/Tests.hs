@@ -20,12 +20,14 @@
 
 module RatCalc.Symbolic.Expression.Tests where
 
+import Control.Monad
 import Test.HUnit
+import Test.QuickCheck
 import RatCalc.Symbolic.Expression
+import RatCalc.Test.QuickCheck.Utils
 
-testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) r (fromString s))
-
-tests =
+unitTests :: Test
+unitTests =
     TestList
         [ TestLabel "1" $ testParse "1" (Number 1)
         , TestLabel "1+2" $ testParse "1+2" (Application (Symbol "+") [Number 1, Number 2])
@@ -36,4 +38,38 @@ tests =
         , TestLabel "1*2^3^4/5" $ testParse "1*2^3^4/5" (Application (Symbol "/") [Application (Symbol "*") [Number 1, Application (Symbol "^") [Number 2, Application (Symbol "^") [Number 3, Number 4]]], Number 5])
         ]
 
--- "1*2^3^4/5" <- I think this should parse as 1*(2^(3^4))/5 but doesn't
+testParse :: String -> Expression -> Test
+testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) r (fromString s))
+
+
+quickChecks :: [QC]
+quickChecks =
+    [ QC checkParser
+    ]
+
+instance Arbitrary Expression where
+    arbitrary = sized expression'
+        where
+            expression' 0 = oneof [liftM Number arbitrary]
+            expression' size =
+                oneof
+                    [ liftM Number arbitrary
+                    , liftM2
+                        Application
+                        (oneof
+                            [ return (Symbol "+")
+                            , return (Symbol "+")
+                            , return (Symbol "*")
+                            , return (Symbol "/")
+                            , return (Symbol "^") -- FIXME: Subtraction
+                            ])
+                        args
+                    ]
+                where
+                    subExpression = expression' (size `div` 2)
+                    args = do l <- subExpression
+                              r <- subExpression
+                              return [l, r]
+
+checkParser :: Expression -> Bool
+checkParser x = x == fromString (show x)
