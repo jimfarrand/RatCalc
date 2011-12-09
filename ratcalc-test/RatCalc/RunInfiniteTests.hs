@@ -27,7 +27,7 @@ import RatCalc.Arithmetic
 import RatCalc.Limits
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation as SBDSR
 import RatCalc.Representation.SignedBinaryDigitStream
-import ShowTable
+import RatCalc.Text.Table
 import System.CPUTime
 import System.IO
 import TestUtils
@@ -71,7 +71,7 @@ runTests nice lens stats (h:t) =
         in do t1 <- seq success getCPUTime
               let td = t1 - t0
                   (stats', count, averageTime) = updateTestStats stats name td
-                  (formatted, lens') = alignColumns lens (show count : printf "%.6fms" ((fromRational averageTime / 10^9) :: Double) : output)
+                  (formatted, lens') = alignColumns " | " lens (map (Text RightAlign 0) (show count : printf "%.6fms" ((fromRational averageTime / 10^9) :: Double) : output))
                in do putStrsLn formatted
                      if success then
                        do let delay = nice * (fromInteger (td `div` 10^6))

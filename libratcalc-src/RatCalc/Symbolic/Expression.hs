@@ -37,13 +37,19 @@ data Expression =
     deriving (Eq)
 
 
+-- TODO: Don't show unnecessary brackets
 instance Show Expression where
-    show (Number x) = show x
+    show (Number x)
+        | x >= 0 = show x
+        | otherwise = "(" ++ show x ++ ")" -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
     show (Symbol s) = s
+    show (Application o [e]) = "(" ++ show o ++ show e ++ ")"
     show (Application o e) = "(" ++ (concat $ List.intersperse (show o) (map show e)) ++ ")"
 
-fromString s =
-    case runParser expressionParser () "" s of
+fromString s = runParser expressionParser () "" s 
+
+fromString' s =
+    case fromString s of
         Right x -> x
         Left e -> error $ "parse failed \"" ++ s ++ "\": " ++ show e
 
@@ -52,8 +58,8 @@ expressionParser = buildExpressionParser table termParser
 table :: Monad m => OperatorTable String () m Expression
 table =
     [ [ binaryOperator "^" AssocRight ]
-    , [ binaryOperator "*" AssocLeft, binaryOperator "/" AssocLeft ]
-    , [ binaryOperator "+" AssocRight ]
+    , [ binaryOperator "*" AssocLeft, binaryOperator "/" AssocLeft, prefixNegate ]
+    , [ binaryOperator "+" AssocRight, binaryOperator "-" AssocRight]
     ]
 
 binaryOperator name assoc =
@@ -61,6 +67,24 @@ binaryOperator name assoc =
         ( do string name
              return (\l r -> Application (Symbol name) [l, r])
         ) assoc
+
+prefixOperator name =
+    Prefix
+        ( do string name
+             return (\r -> Application (Symbol name) [r])
+        )
+
+prefixNegate :: Monad m => Operator String () m Expression
+prefixNegate =
+    Prefix
+        ( do string "-"
+             return
+                ( \r ->
+                    case r of
+                        Number n -> Number (-n)
+                        e -> Application (Symbol "-") [e]
+                )
+        )
 
 termParser = numberParser <|> parenthesisedParser expressionParser
 
@@ -70,14 +94,7 @@ parenthesisedParser f =
        char ')'
        return e
 
-numberParser = negativeNumberParser <|> positiveNumberParser
-
-negativeNumberParser =
-    do char '-'
-       Number n <- positiveNumberParser
-       return $ Number (-n)
-
-positiveNumberParser =
+numberParser =
     do digits <- many1 digit
        let digits' = map (\x -> ord x - ord '0') digits
         in return $ Number $ digitsToNumber 10 0 digits'

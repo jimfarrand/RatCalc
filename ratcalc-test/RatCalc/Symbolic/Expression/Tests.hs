@@ -39,7 +39,7 @@ unitTests =
         ]
 
 testParse :: String -> Expression -> Test
-testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) r (fromString s))
+testParse s r = TestCase (assertEqual ("parsed expression: " ++ show s) r (fromString' s))
 
 
 quickChecks :: [QC]
@@ -58,10 +58,10 @@ instance Arbitrary Expression where
                         Application
                         (oneof
                             [ return (Symbol "+")
-                            , return (Symbol "+")
+                            , return (Symbol "-")
                             , return (Symbol "*")
                             , return (Symbol "/")
-                            , return (Symbol "^") -- FIXME: Subtraction
+                            , return (Symbol "^")
                             ])
                         args
                     ]
@@ -72,4 +72,4 @@ instance Arbitrary Expression where
                               return [l, r]
 
 checkParser :: Expression -> Bool
-checkParser x = x == fromString (show x)
+checkParser x = x == fromString' (show x)
