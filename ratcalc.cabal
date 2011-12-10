@@ -31,6 +31,8 @@ Library
                         RatCalc.Arithmetic,
                         RatCalc.Cauchy,
                         RatCalc.ConversionUtils,
+                        RatCalc.Data.GenericTree,
+                        RatCalc.Data.GenericTree.Zipper,
                         RatCalc.Debug,
                         RatCalc.Estimator,
                         RatCalc.Functions.Exponential,

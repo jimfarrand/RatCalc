@@ -16,19 +16,14 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
+module RatCalc.Data.GenericTree where
 
-import System.Environment
+data GenericTree l b = Leaf l | Branch b (Forest l b)
+    deriving (Eq, Ord, Show, Read)
 
-import Test.QuickCheck
-import RatCalc.Tests
-import RatCalc.Test.QuickCheck.Utils
+type Forest l b = [GenericTree l b]
 
-main :: IO ()
-main =
-    do args <- getArgs
-       runQuickChecks (checkCount args) False quickChecks
-    where
-        checkCount (h:_) = read h
-        checkCount _ = 1000
+branchLabel (Branch b _) = Just b
+branchLabel _ = Nothing
 
-
+subForest (Branch _ f) = f

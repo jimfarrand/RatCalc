@@ -18,6 +18,8 @@
 
 {- Expressions representation, parsing and printing -}
 
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module RatCalc.Symbolic.Expression where
 
 import Data.Char
@@ -29,22 +31,27 @@ import Text.Parsec
 import Text.Parsec.Expr
 import qualified Data.Map as Map
 import qualified Data.Set as Set
+import RatCalc.Data.GenericTree
 
-data Expression =
-      Number Integer
-    | Symbol String
-    | Application Expression [Expression]
-    deriving (Eq)
+type Expression = GenericTree Term Function
 
+data Term = Number Integer | Symbol String
+    deriving (Eq, Ord, Show)
 
--- TODO: Don't show unnecessary brackets
-instance Show Expression where
-    show (Number x)
-        | x >= 0 = show x
-        | otherwise = "(" ++ show x ++ ")" -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
-    show (Symbol s) = s
-    show (Application o [e]) = "(" ++ show o ++ show e ++ ")"
-    show (Application o e) = "(" ++ (concat $ List.intersperse (show o) (map show e)) ++ ")"
+data Function =
+    Function
+        { functionName :: String
+        , infixOperator :: Bool
+        }
+    deriving (Eq, Ord, Show)
+
+showExpression (Leaf (Number x))
+    | x >= 0 = show x
+    | otherwise = "(" ++ show x ++ ")" -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
+showExpression (Leaf (Symbol s)) = s
+showExpression (Branch f e)
+    | infixOperator f = "(" ++ (concat $ List.intersperse (functionName f) (map showExpression e)) ++ ")"
+    | otherwise = functionName f ++ "(" ++ (concat $ List.intersperse ", " (map showExpression e)) ++ ")"
 
 fromString s = runParser expressionParser () "" s 
 
@@ -65,13 +72,13 @@ table =
 binaryOperator name assoc =
     Infix
         ( do string name
-             return (\l r -> Application (Symbol name) [l, r])
+             return (\l r -> Branch (Function name True) [l, r])
         ) assoc
 
 prefixOperator name =
     Prefix
         ( do string name
-             return (\r -> Application (Symbol name) [r])
+             return (\r -> Branch (Function name False) [r])
         )
 
 prefixNegate :: Monad m => Operator String () m Expression
@@ -81,8 +88,8 @@ prefixNegate =
              return
                 ( \r ->
                     case r of
-                        Number n -> Number (-n)
-                        e -> Application (Symbol "-") [e]
+                        Leaf (Number n) -> Leaf (Number (-n))
+                        e -> Branch (Function "-" False) [e]
                 )
         )
 
@@ -97,7 +104,7 @@ parenthesisedParser f =
 numberParser =
     do digits <- many1 digit
        let digits' = map (\x -> ord x - ord '0') digits
-        in return $ Number $ digitsToNumber 10 0 digits'
+        in return $ Leaf $ Number $ digitsToNumber 10 0 digits'
 
 digitsToNumber :: Integer -> Integer -> [Int] -> Integer
 digitsToNumber base a (h:t) = digitsToNumber base (base*a + toInteger h) t

@@ -16,19 +16,29 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
+{- Unit tests for everything -}
 
-import System.Environment
+{-# OPTIONS_GHC -XDoAndIfThenElse #-}
 
-import Test.QuickCheck
-import RatCalc.Tests
-import RatCalc.Test.QuickCheck.Utils
+module RatCalc.Tests where
 
-main :: IO ()
-main =
-    do args <- getArgs
-       runQuickChecks (checkCount args) False quickChecks
-    where
-        checkCount (h:_) = read h
-        checkCount _ = 1000
+import Test.HUnit
+import System.Exit
+import qualified RatCalc.Symbolic.Tests as Symbolic
+import qualified RatCalc.Data.Tests as Data
+import qualified RatCalc.Number.Tests as Number
 
+unitTests =
+    TestList
+        [ TestLabel "Symbolic" Symbolic.unitTests
+        , TestLabel "Data" Data.unitTests
+        , TestLabel "Number" Number.unitTests
+        ]
+
+quickChecks =
+    concat
+        [ Symbolic.quickChecks
+        , Data.quickChecks
+        , Number.quickChecks
+        ]
 

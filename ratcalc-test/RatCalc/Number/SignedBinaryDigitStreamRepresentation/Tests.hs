@@ -18,14 +18,20 @@
 
 
 module RatCalc.Number.SignedBinaryDigitStreamRepresentation.Tests
-    ( quickChecks
+    ( unitTests, quickChecks
     ) where
 
 import Data.Ratio
 import RatCalc.Estimator
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
-import Test.QuickCheck
 import RatCalc.Test.QuickCheck.Utils
+import Test.HUnit
+import Test.QuickCheck
+
+unitTests =
+    TestList
+        [
+        ]
 
 quickChecks =
     [ QC checkApproxEqual

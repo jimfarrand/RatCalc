@@ -17,18 +17,30 @@
 -}
 
 
-import System.Environment
+module RatCalc.Data.GenericTree.Zipper.Tests where
 
-import Test.QuickCheck
-import RatCalc.Tests
-import RatCalc.Test.QuickCheck.Utils
+import Test.HUnit
+import RatCalc.Data.GenericTree
+import RatCalc.Data.GenericTree.Zipper
 
-main :: IO ()
-main =
-    do args <- getArgs
-       runQuickChecks (checkCount args) False quickChecks
+unitTests :: Test
+unitTests =
+    TestList
+        [ TestLabel "CreateZipper" testCreateZipper
+        , TestLabel "LeafChild" testLeafChild
+        ]
+
+testCreateZipper =
+    TestCase $ assertEqual "different tree" t (tree (fromTree t))
     where
-        checkCount (h:_) = read h
-        checkCount _ = 1000
+        t = Branch "+" [Leaf 1, Leaf 2]
+
+testLeafChild =
+    TestCase $ assertEqual "not empty" Nothing (firstChild (fromTree t) >>= firstChild >>= return . tree)
+    where
+        t = Branch "+" [Leaf 1, Leaf 2]
 
 
+quickChecks =
+    [
+    ]

@@ -17,18 +17,18 @@
 -}
 
 
-import System.Environment
+module RatCalc.Symbolic.Tests where
 
-import Test.QuickCheck
-import RatCalc.Tests
-import RatCalc.Test.QuickCheck.Utils
+import Test.HUnit
 
-main :: IO ()
-main =
-    do args <- getArgs
-       runQuickChecks (checkCount args) False quickChecks
-    where
-        checkCount (h:_) = read h
-        checkCount _ = 1000
+import RatCalc.Symbolic.Expression.Tests as Expression
 
+unitTests =
+    TestList
+        [ TestLabel "Expression" Expression.unitTests
+        ]
 
+quickChecks =
+    concat
+        [ Expression.quickChecks
+        ]

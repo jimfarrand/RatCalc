@@ -21,14 +21,13 @@
 {-# OPTIONS_GHC -XDoAndIfThenElse #-}
 
 import RatCalc.Test.QuickCheck.Utils
-import qualified RatCalc.QuickChecks as QuickChecks
-import qualified RatCalc.UnitTests as UnitTests
+import qualified RatCalc.Tests as Tests
 import Test.HUnit
 import System.Exit
 
 main =
     do putStrLn "Running unit tests..."
-       count <- UnitTests.runTests
+       count <- runTestTT Tests.unitTests
        if errors count > 0 then
          exitWith (ExitFailure 1)
        else if failures count > 0 then
@@ -36,5 +35,5 @@ main =
        else
          return ()
        putStrLn "Running quickchecks..."
-       runQuickChecks 100 False QuickChecks.quickChecks
+       runQuickChecks 100 False Tests.quickChecks
 

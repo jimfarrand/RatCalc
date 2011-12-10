@@ -16,16 +16,17 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/
 -}
 
-{- Quickcheck tests -}
 
-module RatCalc.QuickChecks where
+module RatCalc.Data.GenericTree.Tests where
 
-import RatCalc.Number.SignedBinaryDigitStreamRepresentation.Tests as SBDSR
-import RatCalc.Symbolic.Expression.Tests as Expression
+import Test.HUnit
+import RatCalc.Data.GenericTree.Zipper.Tests as Zipper
 
-quickChecks =
-    concat
-        [ SBDSR.quickChecks
-        , Expression.quickChecks
+unitTests :: Test
+unitTests =
+    TestList
+        [ TestLabel "Zipper" Zipper.unitTests
         ]
 
+quickChecks =
+    Zipper.quickChecks

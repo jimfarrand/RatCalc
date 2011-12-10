@@ -20,6 +20,7 @@
 
 import RatCalc.Symbolic.Expression
 import RatCalc.Text.Table
+import RatCalc.Data.GenericTree
 import System.IO
 
 import System.Console.SimpleLineEditor
@@ -39,50 +40,50 @@ evaluate e =
     Just (e', explanation) -> (e', explanation) : evaluate e'
 
 simplify :: Expression -> Maybe (Expression, String)
-simplify (Number _) = Nothing
+simplify (Leaf (Number _)) = Nothing
 
 -- Additive identity
-simplify (Application (Symbol "+") [Number 0, y]) = Just (y, "0+x=x")
-simplify (Application (Symbol "+") [x, Number 0]) = Just (x, "x+0=x")
+simplify (Branch (Function { functionName = "+"}) [Leaf (Number 0), y]) = Just (y, "0+x=x")
+simplify (Branch (Function { functionName = "+"}) [x, Leaf (Number 0)]) = Just (x, "x+0=x")
 
 -- Multiplicative identity
-simplify (Application (Symbol "*") [Number 1, y]) = Just (y, "1*x=x")
-simplify (Application (Symbol "*") [x, Number 1]) = Just (x, "x*1=x")
+simplify (Branch (Function { functionName = "*"}) [Leaf (Number 1), y]) = Just (y, "1*x=x")
+simplify (Branch (Function { functionName = "*"}) [x, Leaf (Number 1)]) = Just (x, "x*1=x")
 
 -- Multiplication by zero
-simplify (Application (Symbol "*") [Number 0, y]) = Just (Number 0, "0*x=0")
-simplify (Application (Symbol "*") [x, Number 0]) = Just (Number 0, "x*0=0")
+simplify (Branch (Function { functionName = "*"}) [Leaf (Number 0), _]) = Just (Leaf (Number 0), "0*x=0")
+simplify (Branch (Function { functionName = "*"}) [_, Leaf (Number 0)]) = Just (Leaf (Number 0), "x*0=0")
 
 -- Division identity
-simplify (Application (Symbol "/") [x, Number 1]) = Just (x, "x/1=x")
+simplify (Branch (Function { functionName = "/"}) [x, Leaf (Number 1)]) = Just (x, "x/1=x")
 
 
 -- Integer addition
-simplify (Application (Symbol "+") [Number x, Number y]) = Just (Number z, concat [show x, "+", show y, "=", show z])
+simplify (Branch (Function { functionName = "+"}) [Leaf (Number x), Leaf (Number y)]) = Just (Leaf (Number z), concat [show x, "+", show y, "=", show z])
     where
         z = x+y
 
 -- Integer multiplication
-simplify (Application (Symbol "*") [Number x, Number y]) = Just (Number z, concat [show x, "*", show y, "=", show z])
+simplify (Branch (Function { functionName = "*"}) [Leaf (Number x), Leaf (Number y)]) = Just (Leaf (Number z), concat [show x, "*", show y, "=", show z])
     where
         z = x*y
 
 -- Integer power of integer
-simplify (Application (Symbol "^") [Number x, Number y]) = Just (Number z, concat [ show x, "^", show y, "=", show z])
+simplify (Branch (Function { functionName = "^"}) [Leaf (Number x), Leaf (Number y)]) = Just (Leaf (Number z), concat [ show x, "^", show y, "=", show z])
     where
         z = x^y
 
 -- Integer power of rational
-simplify (Application (Symbol "^") [Application (Symbol "/") [a, b], Number c]) =
-    Just (Application (Symbol "/") [Application (Symbol "^") [a, Number c], Application (Symbol "^") [b, Number c]]
+simplify (Branch (Function { functionName = "^"}) [Branch (Function { functionName = "/"}) [a, b], Leaf (Number c)]) =
+    Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "^"}) [a, Leaf (Number c)], Branch (Function { functionName = "^"}) [b, Leaf (Number c)]]
          , concat ["(", show a, "/", show b, ")^", show c, "=(", show a, "^", show c, ")/(", show b, "^", show c, ")"])
 
-simplify (Application (Symbol "/") [Number x, Number y])
-    | y == 1 = Just (Number x, concat [show x, "/1=", show x])
+simplify (Branch (Function { functionName = "/"}) [Leaf (Number x), Leaf (Number y)])
+    | y == 1 = Just (Leaf (Number x), concat [show x, "/1=", show x])
 
 
-simplify (Application e args)
-    | ok = Just (Application e args', explanation)
+simplify (Branch e args)
+    | ok = Just (Branch e args', explanation)
     where
         (ok, args', explanation) =
             case simplify' args of
@@ -94,40 +95,39 @@ simplify _ = Nothing
 
 
 -- (x^y)^z = x^(y*z)
-simplify (Application (Symbol "^") [Application (Symbol "^") [x, y], z]) = Just (Application (Symbol "^") [x, Application (Symbol "*") [y, z]])
+simplify (Branch (Function { functionName = "^"}) [Branch (Function { functionName = "^"}) [x, y], z]) = Just (Branch (Function { functionName = "^"}) [x, Branch (Function { functionName = "*"}) [y, z]])
 
 
 
--- x/1 -> x
 -- x/(-y) -> (-x)/y
 -- (n*x)/(x*y) -> x/y
-simplify (Application (Symbol "/") [Number x, Number y])
-    | y == 1 = Just (Number x)
-    | y < 0 = Just (Application (Symbol "/") [Number (-x), Number (-y)])
-    | g > 1 = Just (Application (Symbol "/") [Number (x `div` g), Number (y `div` g)])
+simplify (Branch (Function { functionName = "/"}) [Leaf (Number x), Leaf (Number y)])
+    | y == 1 = Just (Leaf (Number x))
+    | y < 0 = Just (BrancBranch (Function { functionName = "/"}) [Leaf (Number (-x)), Leaf (Number (-y))])
+    | g > 1 = Just (Branch (Function { functionName = "/"}) [Leaf (Number (x) `div` g), Leaf (Number (y) `div` g)])
     where
         g = gcd x y
 
 -- (w/x)*(y/z) -> ((w*y)/(x*z))
-simplify (Application (Symbol "*") [Application (Symbol "/") [w, x], Application (Symbol "/") [y, z]]) = Just (Application (Symbol "/") [Application (Symbol "*") [w, y], Application (Symbol "*") [x, z]])
+simplify (Branch (Function { functionName = "*"}) [Branch (Function { functionName = "/"}) [w, x], Branch (Function { functionName = "/"}) [y, z]]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "*"}) [w, y], Branch (Function { functionName = "*"}) [x, z]])
 
 -- x/(y/z) -> x*(z/y)
-simplify (Application (Symbol "/") [x, Application (Symbol "/") [y, z]]) = Just (Application (Symbol "*") [x, Application (Symbol "/") [z, y]])
+simplify (Branch (Function { functionName = "/"}) [x, Branch (Function { functionName = "/"}) [y, z]]) = Just (Branch (Function { functionName = "*"}) [x, Branch (Function { functionName = "/"}) [z, y]])
 
 -- (x/y)/z -> x/(y*z)
-simplify (Application (Symbol "/") [Application (Symbol "/") [x, y], z]) = Just (Application (Symbol "/") [x, Application (Symbol "*") [y, z]])
+simplify (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "/"}) [x, y], z]) = Just (Branch (Function { functionName = "/"}) [x, Branch (Function { functionName = "*"}) [y, z]])
 
 -- (x/y)*z -> (x*z)/y
-simplify (Application (Symbol "*") [Application (Symbol "/") [x, y], z]) = Just (Application (Symbol "/") [Application (Symbol "*") [x, z], y])
-simplify (Application (Symbol "*") [x, Application (Symbol "/") [y, z]]) = Just (Application (Symbol "/") [Application (Symbol "*") [x, y], z])
+simplify (Branch (Function { functionName = "*"}) [Branch (Function { functionName = "/"}) [x, y], z]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "*"}) [x, z], y])
+simplify (Branch (Function { functionName = "*"}) [x, Branch (Function { functionName = "/"}) [y, z]]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "*"}) [x, y], z])
 
 -- a/b + c/d -> ((a*d)+(c*b))/(b*d)
-simplify (Application (Symbol "+") [Application (Symbol "/") [a, b], Application (Symbol "/") [c, d]]) = Just (Application (Symbol "/") [Application (Symbol "+") [Application (Symbol "*") [a, d], Application (Symbol "*") [c,b]], Application (Symbol "*") [b, d]])
+simplify (Branch (Function { functionName = "+"}) [Branch (Function { functionName = "/"}) [a, b], Branch (Function { functionName = "/"}) [c, d]]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "+"}) [Branch (Function { functionName = "*"}) [a, d], Branch (Function { functionName = "*"}) [c,b]], Branch (Function { functionName = "*"}) [b, d]])
 
 -- a + b/c = ((a*c)+b)/c
-simplify (Application (Symbol "+") [a, Application (Symbol "/") [b,c]]) = Just (Application (Symbol "/") [Application (Symbol "+") [Application (Symbol "*") [a, c], b], c])
+simplify (Branch (Function { functionName = "+"}) [a, Branch (Function { functionName = "/"}) [b,c]]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "+"}) [Branch (Function { functionName = "*"}) [a, c], b], c])
 -- a/b + c = (a+(b*c))/b
-simplify (Application (Symbol "+") [Application (Symbol "/") [a,b], c]) = Just (Application (Symbol "/") [Application (Symbol "+") [a, Application (Symbol "*") [c, b]], b])
+simplify (Branch (Function { functionName = "+"}) [Branch (Function { functionName = "/"}) [a,b], c]) = Just (Branch (Function { functionName = "/"}) [Branch (Function { functionName = "+"}) [a, Branch (Function { functionName = "*"}) [c, b]], b])
 
 
 -}
