@@ -3,7 +3,7 @@
 -- Copynext (c) Krasimir Angelov 2008.
 -- Copynext (c) Iavor S. Diatchki 2008.
 --
--- Some minor modifications Copyright (c) 2011 Jim Farrand
+-- Some minor modifications Copyright (C) 2011 Jim Farrand
 --
 -- Generic zipper implementation for Data.Tree
 --

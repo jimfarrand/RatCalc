@@ -23,7 +23,6 @@
 module RatCalc.Tests where
 
 import Test.HUnit
-import System.Exit
 import qualified RatCalc.Symbolic.Tests as Symbolic
 import qualified RatCalc.Data.Tests as Data
 import qualified RatCalc.Number.Tests as Number

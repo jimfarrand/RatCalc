@@ -18,7 +18,7 @@
 
 {- Tests for expressions -}
 
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module RatCalc.Symbolic.Expression.Tests where
 

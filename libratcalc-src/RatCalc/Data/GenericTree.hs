@@ -18,6 +18,9 @@
 
 module RatCalc.Data.GenericTree where
 
+import Prelude hiding (map)
+import qualified Prelude (map)
+
 data GenericTree l b = Leaf l | Branch b (Forest l b)
     deriving (Eq, Ord, Show, Read)
 
@@ -27,3 +30,7 @@ branchLabel (Branch b _) = Just b
 branchLabel _ = Nothing
 
 subForest (Branch _ f) = f
+
+map :: (l0 -> l1) -> (b0 -> b1) -> GenericTree l0 b0 -> GenericTree l1 b1
+map f _ (Leaf l) = Leaf (f l)
+map f g (Branch b fs) = Branch (g b) (Prelude.map (map f g) fs)

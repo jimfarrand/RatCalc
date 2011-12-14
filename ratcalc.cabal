@@ -46,11 +46,12 @@ Library
                         RatCalc.Representation.SignedBinaryDigit,
                         RatCalc.Representation.SignedBinaryDigitStream,
                         RatCalc.Symbolic.Expression
+                        RatCalc.Symbolic.Expression.PrettyPrint
     Hs-Source-Dirs:     libratcalc-src
     ghc-options:        -W -O2
 
 Executable ratcalc
-    Build-Depends:      base, readline, RatCalc
+    Build-Depends:      base, containers, readline, terminfo, RatCalc
     Main-Is:            Main.hs
     Hs-Source-Dirs:     ratcalc-src
     Ghc-Options:        -W -O2

@@ -24,14 +24,9 @@ module RatCalc.Symbolic.Expression where
 
 import Data.Char
 import Data.List as List
-import Data.Map (Map)
-import Data.Ratio
-import Data.Set (Set)
+import RatCalc.Data.GenericTree hiding (map)
 import Text.Parsec
 import Text.Parsec.Expr
-import qualified Data.Map as Map
-import qualified Data.Set as Set
-import RatCalc.Data.GenericTree
 
 type Expression = GenericTree Term Function
 
@@ -93,13 +88,25 @@ prefixNegate =
                 )
         )
 
-termParser = numberParser <|> parenthesisedParser expressionParser
+termParser = numberParser <|> functionOrSymbolParser <|> parenthesisedParser expressionParser
 
 parenthesisedParser f =
     do char '('
        e <- f
        char ')'
        return e
+
+functionOrSymbolParser =
+    do functionName <- many1 letter
+       functionParser functionName <|> (return (Leaf (Symbol functionName)))
+
+functionParser functionName =
+    do functionArgs <- parenthesisedParser (functionArgumentParser [])
+       return (Branch (Function functionName False) functionArgs)
+
+functionArgumentParser a =
+    do e <- expressionParser
+       ( char ',' >> functionArgumentParser (e:a)) <|> ( return (reverse (e:a)))
 
 numberParser =
     do digits <- many1 digit
