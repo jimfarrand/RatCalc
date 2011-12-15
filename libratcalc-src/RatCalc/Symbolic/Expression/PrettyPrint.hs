@@ -30,6 +30,8 @@ type ExpressionPlus a = GenericTree (Term, a) (Function, a)
 adorn :: e -> Expression -> ExpressionPlus e
 adorn e = GenericTree.map (\x -> (x, e)) (\x -> (x, e))
 
+unadorn = GenericTree.map fst fst
+
 showExpression (Leaf (Number x, effect))
     | x >= 0 = effect (show x)
     -- | otherwise = (str ("(" ++ show x ++ ")")) -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
