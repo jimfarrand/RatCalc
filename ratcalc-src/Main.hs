@@ -18,12 +18,10 @@
 
 {- Expressions representation, parsing and printing -}
 
-{-# LANGUAGE RankNTypes #-}
-
 import Data.Map (Map)
 import Data.Set (Set)
 import RatCalc.Data.GenericTree hiding (map)
-import RatCalc.Symbolic.Expression
+import RatCalc.Symbolic.Expression as Expression
 import RatCalc.Symbolic.Expression.PrettyPrint
 import System.Console.SimpleLineEditor
 import System.Console.Terminfo.Base
@@ -36,13 +34,10 @@ import qualified RatCalc.Data.GenericTree as GenericTree
 import qualified RatCalc.Symbolic.Expression.PrettyPrint as PP
 
 licenseNotice =
-    concat
-        [ "ratcalc  Copyright (C) 2010, 2011 Jim Farrand\n"
-        , "This program comes with ABSOLUTELY NO WARRANTY.\n"
-        , "This is free software, and you are welcome to redistribute it under certain conditions.\n"
-        , "See documentation for details.\n"
-        ]
-
+    "This is ratcalc.  Copyright (C) 2010, 2011 Jim Farrand.  This program comes\n"
+    ++ "with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome to\n"
+    ++ "redistribute it under certain conditions.  See documentation for details.\n"
+--
 -------------------
 -- Repl
 -------------------
@@ -53,37 +48,65 @@ data Effect = Outgoing | NewIncoming | OldIncoming
     deriving (Eq, Ord, Show)
 
 
+data Context =
+    Context
+        { contextTerminal :: Terminal
+        , contextExpressionWidth :: Int
+        }
+
+
 main = do initialise
           terminal <- setupTermFromEnv
-          putStr licenseNotice
-          loop terminal
-
-
-loop terminal =
-    do line <- getLineEdited "> "
+          putStrLn licenseNotice
+          loop
+            Context
+                { contextTerminal = terminal
+                , contextExpressionWidth = 0
+                }
+loop context =
+    do line <- getLineEdited "$ "
        case line of
          Nothing -> return ()
+         Just "\EOT" -> return ()
          Just line -> do
             case fromString line of
-                Left e -> putStrLn $ "Error: " ++ show e
-                Right e -> handleExpression terminal (adorn Set.empty e)
-            putChar '\n'
-            loop terminal
+                Left e -> do
+                    putStrLn $ "Error: " ++ show e
+                    loop context
+                Right e -> do
+                    context <- handleExpression context (adorn Set.empty e)
+                    putChar '\n'
+                    loop context
 
-handleExpression terminal e =
+handleExpression context e =
     case tryRules rules (unadorn e) of
         Nothing -> do
             putStr "= "
-            runTermOutput terminal (prettyShowExpression terminal e)
+            context <- printExpression context False e
             putChar '\n'
-        Just (path, replacement, expl) ->
+            return context
+        Just (path, replacement, rule) ->
             let replacement' = adorn (Set.singleton NewIncoming) replacement
                 e' = subst path replacement' e in do
-                -- putStrLn (show path)
                 putStr "= "
-                runTermOutput terminal (prettyShowExpression terminal (markOutgoing path e))
+                context <- printExpression context True (markOutgoing path e)
+                putStr (substExpl rule)
                 putChar '\n'
-                handleExpression terminal (ageIncoming e')
+                handleExpression context (ageIncoming e')
+    where
+        terminal = contextTerminal context
+
+printExpression context pad e = do
+    runTermOutput terminal (prettyShowExpression terminal e)
+    if pad then
+        putStr (take (width-len+2) (repeat ' '))
+    else
+        return ()
+    return context { contextExpressionWidth = width }
+  where
+    len = length (Expression.showExpression (unadorn e))
+    width = max (contextExpressionWidth context) len
+    terminal = contextTerminal context
 
 markOutgoing path e = subst path (f (get path e)) e
     where
@@ -167,10 +190,11 @@ ruleAdditionIdentity =
         , substReplace =
               \args ->
                 case (numericArg args "a", arg args "b") of
-                    (Just 0, Just b) -> Just $ (b, "Addition identity")
+                    (Just 0, Just b) -> Just b
                     _ -> case (arg args "a", numericArg args "b") of
-                            (Just a, Just 0) -> Just (a, "Addition identity")
+                            (Just a, Just 0) -> Just a
                             _ -> Nothing
+        , substExpl = "Addition identity"
         }
 
 ruleMultiplicationIdentity :: Rule
@@ -180,10 +204,11 @@ ruleMultiplicationIdentity =
         , substReplace =
               \args ->
                 case (numericArg args "a", arg args "b") of
-                    (Just 1, Just b) -> Just $ (b, "Multiplication identity")
+                    (Just 1, Just b) -> Just b
                     _ -> case (arg args "a", numericArg args "b") of
-                            (Just a, Just 1) -> Just (a, "Multiplication identity")
+                            (Just a, Just 1) -> Just a
                             _ -> Nothing
+        , substExpl = "Multiplication identity"
         }
 
 
@@ -194,8 +219,9 @@ ruleDivisionIdentity =
         , substReplace =
               \args ->
                     case (arg args "a", numericArg args "b") of
-                        (Just a, Just 1) -> Just (a, "Division identity")
+                        (Just a, Just 1) -> Just a
                         _ -> Nothing
+        , substExpl = "Division identity"
         }
 
 ruleIntegerAddition :: Rule
@@ -205,8 +231,9 @@ ruleIntegerAddition =
         , substReplace =
               \args ->
                 case (numericArg args "a", numericArg args "b") of
-                    (Just a, Just b) -> Just $ (number (a+b), "Integer addition")
+                    (Just a, Just b) -> Just $ number (a+b)
                     _ -> Nothing
+        , substExpl = "Integer addition"
         }
 
 ruleIntegerMultiplication :: Rule
@@ -216,8 +243,9 @@ ruleIntegerMultiplication =
         , substReplace =
               \args ->
                 case (numericArg args "a", numericArg args "b") of
-                    (Just a, Just b) -> Just $ (number (a*b), "Integer multiplication")
+                    (Just a, Just b) -> Just $ number (a*b)
                     _ -> Nothing
+        , substExpl = "Integer multiplication"
         }
 
 ruleIntegerDivision :: Rule
@@ -232,8 +260,9 @@ ruleIntegerDivision =
                         if g == 1 then
                             Nothing
                         else
-                            Just $ (application (Function "/" True) [number (a `div` g), number (b `div` g)], "Integer multiplication")
+                            Just $ application (Function "/" True) [number (a `div` g), number (b `div` g)]
                     _ -> Nothing
+        , substExpl = "Integer division"
         }
 
 ruleRationalAddition :: Rule
@@ -244,8 +273,9 @@ ruleRationalAddition =
             \args ->
                 case (arg args "a", arg args "b", arg args "c", arg args "d") of
                     (Just a, Just b, Just c, Just d) ->
-                        Just $ (application (Function "/" True) [application (Function "+" True) [application (Function "*" True) [a, d], application (Function "*" True) [c, b]], application (Function "*" True) [b, d]], "Rational addition")
+                        Just $ application (Function "/" True) [application (Function "+" True) [application (Function "*" True) [a, d], application (Function "*" True) [c, b]], application (Function "*" True) [b, d]]
                     _ -> Nothing
+        , substExpl = "Rational addition"
         }
 
 ruleRationalAddition' :: Rule
@@ -256,8 +286,9 @@ ruleRationalAddition' =
             \args ->
                 case (arg args "a", arg args "c", arg args "d") of
                     (Just a, Just c, Just d) ->
-                        Just $ (application (Function "/" True) [application (Function "+" True) [application (Function "*" True) [a, d], c], d], "Rational addition")
+                        Just $ application (Function "/" True) [application (Function "+" True) [application (Function "*" True) [a, d], c], d]
                     _ -> Nothing
+        , substExpl = "Integer/Rational addition"
         }
 
 ruleRationalAddition'' :: Rule
@@ -268,8 +299,9 @@ ruleRationalAddition'' =
             \args ->
                 case (arg args "a", arg args "b", arg args "c") of
                     (Just a, Just b, Just c) ->
-                        Just $ (application (Function "/" True) [application (Function "+" True) [a, application (Function "*" True) [c, b]], b], "Rational addition")
+                        Just $ application (Function "/" True) [application (Function "+" True) [a, application (Function "*" True) [c, b]], b]
                     _ -> Nothing
+        , substExpl = "Rational/Integer addition"
         }
 
 
@@ -282,9 +314,10 @@ ruleRationalMultiplication =
             \args ->
                 case (arg args "a", arg args "b", arg args "c", arg args "d") of
                     (Just a, Just b, Just c, Just d) ->
-                        Just $ (application (Function "/" True) [application (Function "*" True) [a, c], application (Function "*" True) [b, d]], "Rational multiplication")
+                        Just $ application (Function "/" True) [application (Function "*" True) [a, c], application (Function "*" True) [b, d]]
                     _ -> Nothing
 
+        , substExpl = "Rational multiplication"
         }
 
 ruleRationalDivision :: Rule
@@ -295,9 +328,10 @@ ruleRationalDivision =
             \args ->
                 case (arg args "a", arg args "b", arg args "c", arg args "d") of
                     (Just a, Just b, Just c, Just d) ->
-                        Just $ (application (Function "*" True) [application (Function "/" True) [a, b], application (Function "/" True) [d, c]], "Rational division")
+                        Just $ application (Function "*" True) [application (Function "/" True) [a, b], application (Function "/" True) [d, c]]
                     _ -> Nothing
 
+        , substExpl = "Rational division"
         }
 
 
@@ -308,10 +342,10 @@ number n = Leaf (Number n)
 
 symbol = Leaf . Symbol
 
-arg :: Map String Expression -> String -> Maybe Expression
+arg :: Map Symbol Expression -> Symbol -> Maybe Expression
 arg args a = Map.lookup a args
 
-numericArg :: Map String Expression -> String -> Maybe Integer
+numericArg :: Map Symbol Expression -> Symbol -> Maybe Integer
 numericArg args a =
     case Map.lookup a args of
         Just (Leaf (Number n)) -> Just n
@@ -339,13 +373,24 @@ subst _ _ _ = error "subst"
 data Rule =
     Rule
         { substMatch   :: Expression
-        , substReplace :: Map String Expression -> Maybe (Expression, String)
+        , substReplace :: Map Symbol Expression -> Maybe Expression
+        , substExpl    :: String
         }
 
-tryRules :: [Rule] -> Expression -> Maybe (Path, Expression, String)
+instance Show Rule where
+    show (Rule { substMatch = match, substExpl = expl }) =
+        concat
+            [ "Rule { substMatch = "
+            , show match
+            , ", substExpl = "
+            , show expl
+            , "}"
+            ]
+
+tryRules :: [Rule] -> Expression -> Maybe (Path, Expression, Rule)
 tryRules rules expr =
     case tryRulesHead rules expr of
-        Just (expr, expl) -> Just ([], expr, expl)
+        Just (expr', rule) -> Just ([], expr', rule)
         Nothing -> case expr of
             Leaf _ -> Nothing
             Branch _ args -> tryRules' 0 [] args
@@ -353,25 +398,28 @@ tryRules rules expr =
         tryRules' _ _ [] = Nothing
         tryRules' n before (h:t) =
             case tryRules rules h of
-                Just (path, expr,expl) -> Just (n:path, expr, expl) -- Just (n:path, reverse before ++ expr:t, expl)
+                Just (path, expr,expl) -> Just (n:path, expr, expl)
                 Nothing -> tryRules' (n+1) (h:before) t
 
+tryRulesHead :: [Rule] -> Expression -> Maybe (Expression, Rule)
 tryRulesHead [] _ = Nothing
 tryRulesHead (h:t) expr =
     case tryRuleHead h expr of
         Nothing -> tryRulesHead t expr
-        r -> r
+        Just expr' -> Just (expr', h)
 
-tryRuleHead :: Rule -> Expression -> Maybe (Expression, String)
+tryRuleHead :: Rule -> Expression -> Maybe Expression
 tryRuleHead rule expr =
     case tryUnify (substMatch rule) expr of
         Nothing -> Nothing
         Just matches -> substReplace rule matches
 
-tryUnify :: Expression -> Expression -> Maybe (Map String Expression)
+-- Unify expression.  Return the substitution from symbols in the left
+-- expression, that will make it equal to the right expression
+tryUnify :: Expression -> Expression -> Maybe (Map Symbol Expression)
 tryUnify = tryUnify' Map.empty
     where
-        tryUnify' :: Map String Expression -> Expression -> Expression -> Maybe (Map String Expression)
+        tryUnify' :: Map Symbol Expression -> Expression -> Expression -> Maybe (Map Symbol Expression)
         tryUnify' a (Leaf (Symbol x)) e = Just (Map.insert x e a)
         tryUnify' a (Leaf (Number n)) (Leaf (Number m))
             | n == m = Just a
@@ -379,7 +427,7 @@ tryUnify = tryUnify' Map.empty
             | fn1 == fn2 = tryUnifyList' a args1 args2
         tryUnify' _ _ _ = Nothing
 
-        tryUnifyList' :: Map String Expression -> [Expression] -> [Expression] -> Maybe (Map String Expression)
+        tryUnifyList' :: Map Symbol Expression -> [Expression] -> [Expression] -> Maybe (Map Symbol Expression)
         tryUnifyList' a [] [] = Just a
         tryUnifyList' a (h1:t1) (h2:t2) =
             case tryUnify' a h1 h2 of

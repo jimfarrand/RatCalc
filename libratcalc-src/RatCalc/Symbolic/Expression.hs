@@ -30,15 +30,18 @@ import Text.Parsec.Expr
 
 type Expression = GenericTree Term Function
 
-data Term = Number Integer | Symbol String
+data Term = Number Integer | Symbol Symbol
     deriving (Eq, Ord, Show)
 
 data Function =
     Function
-        { functionName :: String
+        { functionName  :: FunctionName
         , infixOperator :: Bool
         }
     deriving (Eq, Ord, Show)
+
+type FunctionName = String
+type Symbol = String
 
 showExpression (Leaf (Number x))
     | x >= 0 = show x

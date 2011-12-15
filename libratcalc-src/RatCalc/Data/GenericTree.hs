@@ -30,6 +30,7 @@ branchLabel (Branch b _) = Just b
 branchLabel _ = Nothing
 
 subForest (Branch _ f) = f
+subForest _ = error "subForest"
 
 map :: (l0 -> l1) -> (b0 -> b1) -> GenericTree l0 b0 -> GenericTree l1 b1
 map f _ (Leaf l) = Leaf (f l)
