@@ -18,6 +18,8 @@
 
 {- Expressions representation, parsing and printing -}
 
+{-# LANGUAGE DoAndIfThenElse #-}
+
 import Data.Map (Map)
 import Data.Set (Set)
 import RatCalc.Data.GenericTree hiding (map)
@@ -37,7 +39,7 @@ licenseNotice =
     "This is ratcalc.  Copyright (C) 2010, 2011 Jim Farrand.  This program comes\n"
     ++ "with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome to\n"
     ++ "redistribute it under certain conditions.  See documentation for details.\n"
---
+
 -------------------
 -- Repl
 -------------------
