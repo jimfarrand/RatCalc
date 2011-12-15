@@ -18,7 +18,7 @@
 
 {- Expressions representation, parsing and printing -}
 
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleContexts #-}
 
 module RatCalc.Symbolic.Expression where
 
@@ -48,7 +48,12 @@ showExpression (Branch f e)
     | infixOperator f = "(" ++ (concat $ List.intersperse (functionName f) (map showExpression e)) ++ ")"
     | otherwise = functionName f ++ "(" ++ (concat $ List.intersperse ", " (map showExpression e)) ++ ")"
 
-fromString s = runParser expressionParser () "" s 
+fromString s = runParser parser () "" s 
+    where
+        parser = do
+            e <- expressionParser
+            eof
+            return e
 
 fromString' s =
     case fromString s of
@@ -67,12 +72,14 @@ table =
 binaryOperator name assoc =
     Infix
         ( do string name
+             spaces
              return (\l r -> Branch (Function name True) [l, r])
         ) assoc
 
 prefixOperator name =
     Prefix
         ( do string name
+             spaces
              return (\r -> Branch (Function name False) [r])
         )
 
@@ -80,6 +87,7 @@ prefixNegate :: Monad m => Operator String () m Expression
 prefixNegate =
     Prefix
         ( do string "-"
+             spaces
              return
                 ( \r ->
                     case r of
@@ -92,24 +100,29 @@ termParser = numberParser <|> functionOrSymbolParser <|> parenthesisedParser exp
 
 parenthesisedParser f =
     do char '('
+       spaces
        e <- f
        char ')'
+       spaces
        return e
 
 functionOrSymbolParser =
     do functionName <- many1 letter
+       spaces
        functionParser functionName <|> (return (Leaf (Symbol functionName)))
 
 functionParser functionName =
     do functionArgs <- parenthesisedParser (functionArgumentParser [])
+       spaces
        return (Branch (Function functionName False) functionArgs)
 
 functionArgumentParser a =
     do e <- expressionParser
-       ( char ',' >> functionArgumentParser (e:a)) <|> ( return (reverse (e:a)))
+       ( char ',' >> spaces >> functionArgumentParser (e:a)) <|> ( return (reverse (e:a)))
 
 numberParser =
     do digits <- many1 digit
+       spaces
        let digits' = map (\x -> ord x - ord '0') digits
         in return $ Leaf $ Number $ digitsToNumber 10 0 digits'
 
