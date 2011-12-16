@@ -37,4 +37,5 @@ showExpression (Leaf (Number x, effect))
     -- | otherwise = (str ("(" ++ show x ++ ")")) -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
 showExpression (Branch (Function { functionName = name, infixOperator = True }, effect) args) =
     effect "(" `mappend` (mconcat $ List.intersperse (effect name) $ map showExpression args) `mappend` effect ")"
-
+showExpression (Branch (Function { functionName = name, infixOperator = False }, effect) args) =
+    mconcat [ effect name,  effect "(", mconcat (List.intersperse (effect ",") (map showExpression args)), effect ")" ]
