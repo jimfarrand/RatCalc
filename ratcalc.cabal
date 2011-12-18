@@ -82,3 +82,9 @@ Executable              ratcalc_benchmark
     Hs-Source-Dirs:     ratcalc-src, ratcalc-test
     ghc-options:        -W -O2 -fno-warn-orphans
 
+Executable              ratcalc_print_pi
+    Build-Depends:      base, RatCalc
+    Main-Is:            RatCalc/Functions/Trigonometry/PrintPi.hs
+    Hs-Source-Dirs:     ratcalc-src, ratcalc-test
+    ghc-options:        -W -O2 -fno-warn-orphans
+
