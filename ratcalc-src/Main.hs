@@ -23,6 +23,7 @@
 import Data.Map (Map)
 import Data.Set (Set)
 import RatCalc.Data.GenericTree hiding (map)
+import RatCalc.Number.ExactReal
 import RatCalc.Symbolic.Expression as Expression
 import RatCalc.Symbolic.Expression.PrettyPrint
 import System.Console.SimpleLineEditor
@@ -56,7 +57,12 @@ data Context =
         , contextExpressionWidth :: Int
         }
 
+data State =
+    State
+        { stateBindings :: Map Symbol ExactReal
+        }
 
+-- Initialise the terminal and then enter the main loop.
 main = do initialise
           terminal <- setupTermFromEnv
           putStrLn licenseNotice
@@ -65,10 +71,13 @@ main = do initialise
                 { contextTerminal = terminal
                 , contextExpressionWidth = 0
                 }
+
+-- The main loop.  Print a prompt, parse it and then handle it
 loop context =
     do line <- getLineEdited "$ "
        case line of
          Nothing -> return ()
+         Just "" -> loop context
          Just "\EOT" -> return ()
          Just line -> do
             case fromString line of
@@ -80,6 +89,7 @@ loop context =
                     putChar '\n'
                     loop context
 
+-- Handle a parsed expression entered by the user
 handleExpression context e =
     case tryRules rules (unadorn e) of
         Nothing -> do
@@ -95,9 +105,36 @@ handleExpression context e =
                 putStr (substExpl rule)
                 putChar '\n'
                 handleExpression context (ageIncoming e')
-    where
-        terminal = contextTerminal context
 
+-- Mark a path with the OutGoing effect
+markOutgoing :: Path -> ExpressionPlus Effects -> ExpressionPlus Effects
+markOutgoing path e = subst path (f (dereferencePath path e)) e
+    where
+        -- f = GenericTree.map g g
+        -- g (l, e) = (l, Set.insert Outgoing e)
+        f (Leaf (l, e)) = Leaf (l, g e)
+        f (Branch (b, e) args)= Branch (b, g e) args
+        g = Set.insert Outgoing
+
+-- Make NewIncoming nodes OldIncoming, and remove OldIncoming
+ageIncoming :: ExpressionPlus Effects -> ExpressionPlus Effects
+ageIncoming =
+    GenericTree.map
+        ( \(l, e) -> (l, Set.fromList (concatMap f (Set.elems e))) )
+        ( \(b, e) -> (b, Set.fromList (concatMap f (Set.elems e))) )
+    where
+        f NewIncoming = [OldIncoming]
+        f OldIncoming = []
+        f Outgoing = [Outgoing]
+
+-- Find the sub-expression indicated by the given path
+dereferencePath :: [Int] -> GenericTree t t1 -> GenericTree t t1
+dereferencePath [] e = e
+dereferencePath (h:t) (Branch _ args) = dereferencePath t (args !! h)
+dereferencePath _ _ = error "dereferncePath"
+
+-- Print an appropriately padded expression.  Update the padding in the context.
+printExpression :: Context -> Bool -> ExpressionPlus Effects -> IO Context
 printExpression context pad e = do
     runTermOutput terminal (prettyShowExpression terminal e)
     if pad then
@@ -110,62 +147,39 @@ printExpression context pad e = do
     width = max (contextExpressionWidth context) len
     terminal = contextTerminal context
 
-markOutgoing path e = subst path (f (get path e)) e
-    where
-        -- f = GenericTree.map g g
-        -- g (l, e) = (l, Set.insert Outgoing e)
-        f (Leaf (l, e)) = Leaf (l, g e)
-        f (Branch (b, e) args)= Branch (b, g e) args
-        g = Set.insert Outgoing
 
-get [] e = e
-get (h:t) (Branch _ args) = get t (args !! h)
-get _ _ = error "get"
-
-ageIncoming =
-    GenericTree.map
-        ( \(l, e) -> (l, Set.fromList (concatMap f (Set.elems e))) )
-        ( \(b, e) -> (b, Set.fromList (concatMap f (Set.elems e))) )
-    where
-        f NewIncoming = [OldIncoming]
-        f OldIncoming = []
-        f Outgoing = [Outgoing]
-
-
-
-
+-- Turn a marked up expression into terminal output
 prettyShowExpression :: Terminal -> ExpressionPlus (Set Effect) -> TermOutput
 prettyShowExpression terminal expr = PP.showExpression $ reifyEffects terminal (propogateEffects Set.empty expr)
 
+-- Propogate effects to children
 propogateEffects :: Ord a => Set a -> ExpressionPlus (Set a) -> ExpressionPlus (Set a)
 propogateEffects es' (Leaf (l, es)) = Leaf (l, Set.union es es')
 propogateEffects es' (Branch (l, es) args) = Branch (l, es'') (map (propogateEffects es'') args)
     where
         es'' = Set.union es es'
 
+-- Turn effects into functions that apply the appropriate markup
 reifyEffects terminal = GenericTree.map (\(l, e) -> (l, f e)) (\(b, e) -> (b, f e))
     where
         f = applyEffects terminal
 
-applyEffects terminal effects s
-    | effects == Set.empty = termText s
-    | effects == Set.singleton OldIncoming = applyAttributes terminal (defaultAttributes { boldAttr = True }) (applyColor terminal Yellow (termText s))
-    | effects == Set.singleton Outgoing = applyAttributes terminal (defaultAttributes { underlineAttr = True }) (applyColor terminal Cyan (termText s))
-    | effects == Set.fromList [OldIncoming, Outgoing] = applyAttributes terminal (defaultAttributes { boldAttr = True, underlineAttr = True } ) (applyColor terminal Green (termText s))
-    | otherwise = error "applyEffects: unknown effect list"
+        applyEffects terminal effects s
+            | effects == Set.empty = termText s
+            | effects == Set.singleton OldIncoming = applyAttributes terminal (defaultAttributes { boldAttr = True }) (applyColor terminal Yellow (termText s))
+            | effects == Set.singleton Outgoing = applyAttributes terminal (defaultAttributes { underlineAttr = True }) (applyColor terminal Cyan (termText s))
+            | effects == Set.fromList [OldIncoming, Outgoing] = applyAttributes terminal (defaultAttributes { boldAttr = True, underlineAttr = True } ) (applyColor terminal Green (termText s))
+            | otherwise = error "applyEffects: unknown effect list"
 
-applyAttributes terminal attributes s =
-    case getCapability terminal withAttributes of
-        Just f -> f attributes s
-        Nothing -> s
+        applyAttributes terminal attributes s =
+            case getCapability terminal withAttributes of
+                Just f -> f attributes s
+                Nothing -> s
 
-applyColor terminal color s =
-    case getCapability terminal withForegroundColor of
-        Just f -> f color s
-        Nothing -> s
-
-
-
+        applyColor terminal color s =
+            case getCapability terminal withForegroundColor of
+                Just f -> f color s
+                Nothing -> s
 
 -------------------
 -- Rules
