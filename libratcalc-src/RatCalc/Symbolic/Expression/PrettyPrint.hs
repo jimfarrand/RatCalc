@@ -34,7 +34,8 @@ unadorn = GenericTree.map fst fst
 
 showExpression (Leaf (Number x, effect))
     | x >= 0 = effect (show x)
-    -- | otherwise = (str ("(" ++ show x ++ ")")) -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
+    | otherwise = effect ("(" ++ show x ++ ")") -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
+showExpression (Leaf (Symbol x, effect)) = effect x
 showExpression (Branch (Function { functionName = name, infixOperator = True }, effect) args) =
     effect "(" `mappend` (mconcat $ List.intersperse (effect name) $ map showExpression args) `mappend` effect ")"
 showExpression (Branch (Function { functionName = name, infixOperator = False }, effect) args) =
