@@ -32,13 +32,13 @@ import RatCalc.Data.GenericTree
 unitTests :: Test
 unitTests =
     TestList
-        [ TestLabel "1" $ testParse "1" (Leaf (Number 1))
-        , TestLabel "1+2" $ testParse "1+2" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Number 1), Leaf (Number 2)])
-        , TestLabel "1+2+3" $ testParse "1+2+3" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Number 1), Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Number 2), Leaf (Number 3)]])
-        , TestLabel "1+2*3" $ testParse "1+2*3" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Number 1), Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Number 2), Leaf (Number 3)]])
-        , TestLabel "1*2+3" $ testParse "1*2+3" (Branch (Function { functionName = "+", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Number 1), Leaf (Number 2)], Leaf (Number 3)])
-        , TestLabel "1*2*3" $ testParse "1*2*3" (Branch (Function { functionName = "*", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Number 1), Leaf (Number 2)], Leaf (Number 3)])
-        , TestLabel "1*2^3^4/5" $ testParse "1*2^3^4/5" (Branch (Function { functionName = "/", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Number 1), Branch (Function { functionName = "^", infixOperator = True}) [Leaf (Number 2), Branch (Function { functionName = "^", infixOperator = True}) [Leaf (Number 3), Leaf (Number 4)]]], Leaf (Number 5)])
+        [ TestLabel "1" $ testParse "1" (Leaf (Integer 1))
+        , TestLabel "1+2" $ testParse "1+2" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Integer 1), Leaf (Integer 2)])
+        , TestLabel "1+2+3" $ testParse "1+2+3" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Integer 1), Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Integer 2), Leaf (Integer 3)]])
+        , TestLabel "1+2*3" $ testParse "1+2*3" (Branch (Function { functionName = "+", infixOperator = True}) [Leaf (Integer 1), Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Integer 2), Leaf (Integer 3)]])
+        , TestLabel "1*2+3" $ testParse "1*2+3" (Branch (Function { functionName = "+", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Integer 1), Leaf (Integer 2)], Leaf (Integer 3)])
+        , TestLabel "1*2*3" $ testParse "1*2*3" (Branch (Function { functionName = "*", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Integer 1), Leaf (Integer 2)], Leaf (Integer 3)])
+        , TestLabel "1*2^3^4/5" $ testParse "1*2^3^4/5" (Branch (Function { functionName = "/", infixOperator = True}) [Branch (Function { functionName = "*", infixOperator = True}) [Leaf (Integer 1), Branch (Function { functionName = "^", infixOperator = True}) [Leaf (Integer 2), Branch (Function { functionName = "^", infixOperator = True}) [Leaf (Integer 3), Leaf (Integer 4)]]], Leaf (Integer 5)])
         ]
 
 testParse :: String -> Expression -> Test
@@ -51,7 +51,7 @@ quickChecks =
     ]
 
 instance Arbitrary Term where
-    arbitrary = oneof [ liftM Number arbitrary ] --, liftM Symbol arbitrary ]
+    arbitrary = oneof [ liftM Integer arbitrary ] --, liftM Symbol arbitrary ]
 
 instance Arbitrary Expression where
     arbitrary = sized expression'

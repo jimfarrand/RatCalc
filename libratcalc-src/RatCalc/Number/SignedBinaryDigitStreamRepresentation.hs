@@ -38,7 +38,7 @@ exponent (SBDSR e _) = e
 mantissa (SBDSR _ m) = m
 
 instance Show SBDSR where
-    show = showBits 50
+    show = showBits 32
 
 showBits n (SBDSR exponent mantissa) = concat [ "2^", show exponent, "*", SBDS.showBits n mantissa]
 

@@ -25,12 +25,13 @@ module RatCalc.Symbolic.Expression where
 import Data.Char
 import Data.List as List
 import RatCalc.Data.GenericTree hiding (map)
+import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import Text.Parsec
 import Text.Parsec.Expr
 
 type Expression = GenericTree Term Function
 
-data Term = Number Integer | Symbol Symbol
+data Term = Integer Integer | Real SBDSR | Symbol Symbol
     deriving (Eq, Ord, Show)
 
 data Function =
@@ -43,7 +44,11 @@ data Function =
 type FunctionName = String
 type Symbol = String
 
-showExpression (Leaf (Number x))
+-- This could be combined with the version in pretty print (with identity function as effects)
+showExpression (Leaf (Integer x))
+    | x >= 0 = show x
+    | otherwise = "(" ++ show x ++ ")" -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
+showExpression (Leaf (Real x))
     | x >= 0 = show x
     | otherwise = "(" ++ show x ++ ")" -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
 showExpression (Leaf (Symbol s)) = s
@@ -94,7 +99,7 @@ prefixNegate =
              return
                 ( \r ->
                     case r of
-                        Leaf (Number n) -> Leaf (Number (-n))
+                        Leaf (Integer n) -> Leaf (Integer (-n))
                         e -> Branch (Function "-" False) [e]
                 )
         )
@@ -127,9 +132,9 @@ numberParser =
     do digits <- many1 digit
        spaces
        let digits' = map (\x -> ord x - ord '0') digits
-        in return $ Leaf $ Number $ digitsToNumber 10 0 digits'
+        in return $ Leaf $ Integer $ digitsToInteger 10 0 digits'
 
-digitsToNumber :: Integer -> Integer -> [Int] -> Integer
-digitsToNumber base a (h:t) = digitsToNumber base (base*a + toInteger h) t
-digitsToNumber _ a [] = a
+digitsToInteger :: Integer -> Integer -> [Int] -> Integer
+digitsToInteger base a (h:t) = digitsToInteger base (base*a + toInteger h) t
+digitsToInteger _ a [] = a
 

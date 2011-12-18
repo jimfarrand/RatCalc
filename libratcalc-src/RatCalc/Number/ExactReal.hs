@@ -22,7 +22,7 @@
  -}
 
 module RatCalc.Number.ExactReal
-    ( ExactReal
+    ( ExactReal(..)
     , fromSBDSR
     ) where
 
@@ -31,48 +31,51 @@ import RatCalc.Estimator
 import RatCalc.Arithmetic
 import Data.Ratio
 
-data ExactReal = RRational Rational | RSBDSR SBDSR
+data ExactReal = RationalReal Rational | MaybeIrrationalReal SBDSR
     deriving (Show)
 
-fromSBDSR = RSBDSR
+fromSBDSR = MaybeIrrationalReal
 
 instance Eq ExactReal where
-    RRational a == RRational b = a == b
+    RationalReal a == RationalReal b = a == b
     a == b = toSBDSR a == toSBDSR b
 
 instance Ord ExactReal where
-    compare (RRational a) (RRational b) = compare a b
+    compare (RationalReal a) (RationalReal b) = compare a b
     compare a b = compare (toSBDSR a) (toSBDSR b)
 
 instance Num ExactReal where
-    fromInteger = RRational . fromInteger
+    fromInteger = RationalReal . fromInteger
 
-    RRational a + RRational b = RRational (a+b)
-    RSBDSR a + RRational b = RSBDSR (a + fromRational b)
-    RRational a + RSBDSR b = RSBDSR (fromRational a + b)
-    RSBDSR a + RSBDSR b = RSBDSR (a+b)
+    RationalReal a + RationalReal b = RationalReal (a+b)
+    MaybeIrrationalReal a + RationalReal b = MaybeIrrationalReal (a + fromRational b)
+    RationalReal a + MaybeIrrationalReal b = MaybeIrrationalReal (fromRational a + b)
+    MaybeIrrationalReal a + MaybeIrrationalReal b = MaybeIrrationalReal (a+b)
 
-    RRational a - RRational b = RRational (a-b)
-    RSBDSR a - RRational b = RSBDSR (a - fromRational b)
-    RRational a - RSBDSR b = RSBDSR (fromRational a - b)
-    RSBDSR a - RSBDSR b = RSBDSR (a-b)
+    RationalReal a - RationalReal b = RationalReal (a-b)
+    MaybeIrrationalReal a - RationalReal b = MaybeIrrationalReal (a - fromRational b)
+    RationalReal a - MaybeIrrationalReal b = MaybeIrrationalReal (fromRational a - b)
+    MaybeIrrationalReal a - MaybeIrrationalReal b = MaybeIrrationalReal (a-b)
 
-    RRational a * (RRational b) = RRational (a*b)
-    RSBDSR a * (RRational b) = RSBDSR (a * fromRational b)
-    RRational a * (RSBDSR b) = RSBDSR (fromRational a * b)
-    RSBDSR a * (RSBDSR b) = RSBDSR (a*b)
+    RationalReal a * (RationalReal b) = RationalReal (a*b)
+    MaybeIrrationalReal a * (RationalReal b) = MaybeIrrationalReal (a * fromRational b)
+    RationalReal a * (MaybeIrrationalReal b) = MaybeIrrationalReal (fromRational a * b)
+    MaybeIrrationalReal a * (MaybeIrrationalReal b) = MaybeIrrationalReal (a*b)
+
+    abs _ = error "ExactReal.abs: not implemented"
+    signum _ = error "ExactReal.abs: not implemented"
 
 instance IntegerDivision ExactReal where
-    (RRational a) /# b = RRational (a * (1%b))
-    (RSBDSR a) /# b = RSBDSR (a /# b)
+    (RationalReal a) /# b = RationalReal (a * (1%b))
+    (MaybeIrrationalReal a) /# b = MaybeIrrationalReal (a /# b)
 
 instance Fractional ExactReal where
-    fromRational = RRational
+    fromRational = RationalReal
 
 instance ToSBDSR ExactReal where
-    toSBDSR (RSBDSR n) = n
-    toSBDSR (RRational n) = fromRational n
+    toSBDSR (MaybeIrrationalReal n) = n
+    toSBDSR (RationalReal n) = fromRational n
 
 instance Estimator ExactReal where
-    toNestedIntervals (RRational a) = [(a,a)]
-    toNestedIntervals (RSBDSR a) = toNestedIntervals a
+    toNestedIntervals (RationalReal a) = [(a,a)]
+    toNestedIntervals (MaybeIrrationalReal a) = toNestedIntervals a

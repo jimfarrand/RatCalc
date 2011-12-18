@@ -19,11 +19,12 @@
 
 module RatCalc.Symbolic.Expression.PrettyPrint where
 
+import Data.List as List
 import Data.Monoid
 import RatCalc.Data.GenericTree hiding (map)
+import RatCalc.Estimator
 import RatCalc.Symbolic.Expression hiding (showExpression)
 import qualified RatCalc.Data.GenericTree as GenericTree
-import Data.List as List
 
 type ExpressionPlus a = GenericTree (Term, a) (Function, a)
 
@@ -32,9 +33,12 @@ adorn e = GenericTree.map (\x -> (x, e)) (\x -> (x, e))
 
 unadorn = GenericTree.map fst fst
 
-showExpression (Leaf (Number x, effect))
+showExpression (Leaf (Integer x, effect))
     | x >= 0 = effect (show x)
     | otherwise = effect ("(" ++ show x ++ ")") -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
+showExpression (Leaf (Real x, effect))
+    | x >= 0 = effect (showEstimatorDigits 10 20 x)
+    | otherwise = effect ("(" ++ showEstimatorDigits 10 20 x ++ ")") -- FIXME: This is necessary, because -12^4 = -(12^4), not (-12)^4
 showExpression (Leaf (Symbol x, effect)) = effect x
 showExpression (Branch (Function { functionName = name, infixOperator = True }, effect) args) =
     effect "(" `mappend` (mconcat $ List.intersperse (effect name) $ map showExpression args) `mappend` effect ")"
