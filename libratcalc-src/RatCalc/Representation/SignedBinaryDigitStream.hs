@@ -24,9 +24,11 @@
 module RatCalc.Representation.SignedBinaryDigitStream where
 
 import RatCalc.Arithmetic
+import RatCalc.BuildConfig
 import RatCalc.Debug
 import RatCalc.Estimator
 import RatCalc.Representation.SignedBinaryDigit hiding (multiply)
+import Control.Parallel
 
 import qualified RatCalc.Representation.SignedBinaryDigit as SBD
 
@@ -134,7 +136,6 @@ average x y = average' x y 0
     where
         average' x y c = trace3 "average'" _average' x y c
         -- These are optimisations for infinite streams - there might be more
-        {- TODO: Switched off until we know they are safe 
         _average' Ms Ms 0 = Ms
         _average' Zs Zs 0 = Zs
         _average' Ps Ps 0 = Ps
@@ -143,7 +144,7 @@ average x y = average' x y 0
         _average' Ps Zs (-1) = Zs
         _average' Zs Ps (-1) = Zs
         _average' Zs Ms (1) = Zs
-        _average' Ms Zs (1) = Zs -}
+        _average' Ms Zs (1) = Zs 
         _average' x y c
             | even d' = cons (sign d') (average' x' y' 0)
             | otherwise = average'' x' y' d'
@@ -341,3 +342,28 @@ forcePrecision orig n = forcePrecision' orig n
         forcePrecision' (Zt s) n = forcePrecision' s (n-1)
         forcePrecision' (Pt s) n = forcePrecision' s (n-1)
 
+withParallelLookahead s =
+    if multiprocessor then
+        withParallelLookahead' 0 s
+    else
+        s
+
+withParallelLookahead' :: Int -> SBDS -> SBDS
+withParallelLookahead' n (Mt d)
+    | n == lookaheadEvery = par (doLookahead lookaheadDistance d) (Mt (withParallelLookahead' 0 d))
+    | otherwise = Mt (withParallelLookahead' (n+1) d)
+withParallelLookahead' n (Zt d)
+    | n == lookaheadEvery = par (doLookahead lookaheadDistance d) (Zt (withParallelLookahead' 0 d))
+    | otherwise = Zt (withParallelLookahead' (n+1) d)
+withParallelLookahead' n (Pt d)
+    | n == lookaheadEvery = par (doLookahead lookaheadDistance d) (Pt (withParallelLookahead' 0 d))
+    | otherwise = Pt (withParallelLookahead' (n+1) d)
+withParallelLookahead' _ x = x
+
+doLookahead :: Int -> SBDS -> ()
+doLookahead n _
+    | n == 0 = ()
+doLookahead n (Mt s) = doLookahead (n-1) s
+doLookahead n (Zt s) = doLookahead (n-1) s
+doLookahead n (Pt s) = doLookahead (n-1) s
+doLookahead _ _ = ()

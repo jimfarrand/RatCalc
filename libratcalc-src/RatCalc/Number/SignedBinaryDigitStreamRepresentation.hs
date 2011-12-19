@@ -20,15 +20,17 @@
 
 module RatCalc.Number.SignedBinaryDigitStreamRepresentation where
 
+import Control.Parallel
 import Data.Ratio
 import Data.Ratio as Ratio
+import RatCalc.BuildConfig
 import RatCalc.ConversionUtils
 import RatCalc.Arithmetic
 import RatCalc.Estimator
 import RatCalc.Representation.DyadicRational as DR
 import RatCalc.Representation.DyadicRationalStream as DRS
 import RatCalc.Representation.SignedBinaryDigit as SBD
-import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits)
+import RatCalc.Representation.SignedBinaryDigitStream hiding (normalise, showBits, withParallelLookahead, withParallelLookahead')
 
 import qualified RatCalc.Representation.SignedBinaryDigitStream as SBDS
 
@@ -36,6 +38,13 @@ data SBDSR = SBDSR Integer SBDS
 
 exponent (SBDSR e _) = e
 mantissa (SBDSR _ m) = m
+
+withParallelLookahead s =
+    if multiprocessor then
+        withParallelLookahead' s
+    else
+        s
+withParallelLookahead' (SBDSR e m) = {- par e -} (SBDSR e (SBDS.withParallelLookahead m))
 
 instance Show SBDSR where
     show = showBits 32
@@ -83,28 +92,28 @@ instance Num SBDSR where
 
     SBDSR e0 m0 + SBDSR e1 m1 =
            let em = max e0 e1
-            in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (shiftRight m1 (em - e1)))
+            in normalise $ withParallelLookahead $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (shiftRight m1 (em - e1)))
 
     SBDSR e0 m0 - SBDSR e1 m1 =
            let em = max e0 e1
-            in normalise $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (SBDS.neg (shiftRight m1 (em - e1))))
+            in normalise $ withParallelLookahead $ SBDSR (em+1) (SBDS.average (shiftRight m0 (em - e0)) (SBDS.neg (shiftRight m1 (em - e1))))
 
-    SBDSR e0 m0 * SBDSR e1 m1 = normalise $ SBDSR (e0+e1) (SBDS.multiply m0 m1)
+    SBDSR e0 m0 * SBDSR e1 m1 = normalise $ withParallelLookahead $ SBDSR (e0+e1) (SBDS.multiply m0 m1)
 
     abs _ = error "SDSR.abs: not implemented"
     signum _ = error "SBDSR.signum: not implemented"
 
 
 instance IntegerDivision SBDSR where
-    (SBDSR e m) /#  i = normalise $ SBDSR e (m /# i)
+    (SBDSR e m) /#  i = normalise $ withParallelLookahead $ SBDSR e (m /# i)
 
 
 instance Fractional SBDSR where
-    fromRational r = fromInteger (Ratio.numerator r) /# Ratio.denominator r
+    fromRational r = normalise $ withParallelLookahead $ fromInteger (Ratio.numerator r) /# Ratio.denominator r
 
     SBDSR e0 m0 / SBDSR e1 m1 =
            let (e1_fix, m1') = fixInput m1
-            in normalise $ convertDRSR_SBDSR ((e0-e1+e1_fix+2), (divideSBDS_DRS m0 m1'))
+            in normalise $ withParallelLookahead $ convertDRSR_SBDSR ((e0-e1+e1_fix+2), (divideSBDS_DRS m0 m1'))
         where
             fixInput = fixInput' 0
                 where
@@ -194,7 +203,7 @@ convertDRS_SBDS (DRS a (DRS b x))
     a' = DR.average a (DR.divideByTwo b)
 
 convertDRSR_SBDSR :: (Integer, DRS) -> SBDSR
-convertDRSR_SBDSR (e,m) = SBDSR e ( convertDRS_SBDS m )
+convertDRSR_SBDSR (e,m) = withParallelLookahead $ SBDSR e ( convertDRS_SBDS m )
 
 normalise = normalise' normaliseIterations
 

@@ -22,17 +22,18 @@
 
 module Main where
 
+import Data.List
 import Data.Ratio
 import RatCalc.Estimator
-import RatCalc.Functions.Trigonometry as Trig
 import RatCalc.Functions.Exponential as Exponential
+import RatCalc.Functions.Trigonometry as Trig
 import RatCalc.Number.SignedBinaryDigitStreamRepresentation
 import System.CPUTime
 import System.Environment
 import System.IO
-import Text.Printf
+import System.Time
 import TestUtils
-import Data.List
+import Text.Printf
 
 showResults info count time =
     do putStrLn' "\n#name, count, time, results per time, time per result"
@@ -56,18 +57,28 @@ putStrLn' s =
     do hPutStrLn stderr s
        hFlush stderr
 
+getTime =
+    if useClockTime then
+        do (TOD s p) <- getClockTime
+           return (s*pico + p)
+    else
+        getCPUTime
+
+useClockTime = True
+
 benchmark' :: [String] -> Integer -> Integer -> Integer -> Integer -> (a -> String) -> (a -> a) -> a -> IO ()
 benchmark' name t0 t1 tm count f s state =
-  do t2 <- getCPUTime
+  do t2 <- getTime
      if (t2-t0) >= tm then
        showResults name count (t1-t0)
      else
        do putStr' (f state)
+          -- putStrLn $ show $ fromRational ((t2 - t0)%pico)
           count `seq` benchmark' name t0 t2 tm (count+1) f s (s state)
 
 benchmark name seconds f s state =
-    do t0 <- getCPUTime
-       benchmark' name t0 t0 (t0+seconds*pico) 0 f s state
+    do t0 <- getTime
+       benchmark' name t0 t0 (seconds*pico) 0 f s state
 
 benchmarkDigits name seconds x = benchmark name seconds (show . head) tail (unsafeDigits 10 1 x)
 

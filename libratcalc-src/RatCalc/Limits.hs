@@ -40,7 +40,7 @@ limitsToExactReal is = fromSBDSR $ limitsToExactReal' (max lbe ube) r
 
 limitsToExactReal' :: Integer -> [Interval SBDSR] -> SBDSR
 limitsToExactReal' e (i0:is) =
-  SBDSR
+  SBDSR.withParallelLookahead $ SBDSR
     e
     (bananaBracketSBDSR e lb (limitsToExactReal' e is) ub)
   where

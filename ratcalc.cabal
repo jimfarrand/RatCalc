@@ -26,7 +26,7 @@ Category:Testing
 Synopsis:A lazy, infinite precision numeric library
 
 Library
-    Build-Depends:      base, containers, parsec
+    Build-Depends:      base, containers, parallel, parsec
     Exposed-Modules:
                         RatCalc.Arithmetic,
                         RatCalc.Cauchy,
@@ -49,6 +49,8 @@ Library
                         RatCalc.Symbolic.Expression.PrettyPrint
     Hs-Source-Dirs:     libratcalc-src
     ghc-options:        -W -O2
+
+-- -threaded -feager-blackholing -rtsopts
 
 Executable ratcalc
     Build-Depends:      base, containers, readline, terminfo, RatCalc
@@ -77,14 +79,14 @@ Test-Suite ratcalc_quickchecks
     Ghc-Options:        -W -fno-warn-orphans
 
 Executable              ratcalc_benchmark
-    Build-Depends:      base, RatCalc
+    Build-Depends:      base, old-time, RatCalc
     Main-Is:            Benchmark.hs
     Hs-Source-Dirs:     ratcalc-src, ratcalc-test
-    ghc-options:        -W -O2 -fno-warn-orphans
+    ghc-options:        -W -O2 -threaded
 
 Executable              ratcalc_print_pi
     Build-Depends:      base, RatCalc
     Main-Is:            RatCalc/Functions/Trigonometry/PrintPi.hs
     Hs-Source-Dirs:     ratcalc-src, ratcalc-test
-    ghc-options:        -W -O2 -fno-warn-orphans
+    ghc-options:        -W -O2 -threaded -fno-warn-orphans -feager-blackholing -rtsopts
 
