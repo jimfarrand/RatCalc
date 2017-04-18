@@ -12,4 +12,4 @@ dependencies:
 
 test:
   override:
-    - stack test --test-arguments -a100000
+    - stack test --test-arguments -a10000
