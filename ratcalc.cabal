@@ -16,6 +16,8 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Xyxyx.RatCalc.ConstructiveReal
+    , Xyxyx.RatCalc.ConstructiveReal.Num
+  other-modules:       Xyxyx.RatCalc.ConstructiveReal.B
   build-depends:       base >= 4.9.1 && < 5
     , array >= 0.5
     , naturals
