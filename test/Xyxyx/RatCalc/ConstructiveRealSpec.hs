@@ -35,6 +35,9 @@ spec = do
         describe "-" $ do
             it "can subtract rationals so they approximate to the correct Double" $ property $
                 \x y -> approximate ((rational x) - (rational y)) == fromRational (x-y)
+        describe "*" $ do
+            it "can multiply rationals so they approximate to the correct Double" $ property $
+                \x y -> approximate ((rational x) * (rational y)) == fromRational (x*y)
         describe "negate" $ do
             it "can negate rationals so they approximate to the correct Double" $ property $
                 \x -> approximate (negate (rational x)) == fromRational (negate x)
