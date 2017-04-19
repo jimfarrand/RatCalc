@@ -37,14 +37,14 @@ approximate r = approximate' 0
         lb' = fromRational lb
         ub' = fromRational ub
 
-add :: CReal -> CReal -> CReal
-add (CReal x) (CReal y) = CReal $ add'
-  where
-    w | b >= 4 = 1
-      | b >= 2 = 2
-      | otherwise = error "add: b < 2"
+instance Num CReal where
+  (CReal x) + (CReal y) = CReal $ add'
+    where
+      w | b >= 4 = 1
+        | b >= 2 = 2
+        | otherwise = error "add: b < 2"
 
-    bw = fromIntegral (bN w)
+      bw = fromIntegral (bN w)
 
-    add' n = round (((x (n+w)) + (y (n+w))) % bw)
+      add' n = round (((x (n+w)) + (y (n+w))) % bw)
 
