@@ -18,7 +18,7 @@
 
 module Xyxyx.RatCalc.ConstructiveReal.B
   ( b
-  , bN, divBN
+  , bN, bN', divBN
   )
   where
 
@@ -27,22 +27,34 @@ import Data.Bits
 import Data.List
 import Data.Word
 import Numeric.Natural
+import Data.Ratio
 
 b :: Natural
 b = 4
 
-bN :: Word -> Natural
+bN :: (Integral a, Num b) => a -> b
 bN n
-  | n <= lookupTableMask = lookupTable ! n
-  | otherwise = bN' (lookupTable ! lookupTableMask) (n-lookupTableMask)
+   | n >= 0 = fromIntegral $ bN_WN (fromIntegral n)
+   | otherwise = error "bN: n < 0"
 
-bN' :: Natural -> Word -> Natural
-bN' a n
-  | n <= lookupTableMask = (a * lookupTable ! n)
-  | otherwise = bN' (a * lookupTable ! lookupTableMask) (n-lookupTableMask)
+bN' :: (Integral a, Fractional b) => a -> b
+bN' n
+  | n > 0 = bN n
+  | n < 0 = recip $ bN (-n)
+  | otherwise = 1
+
+bN_WN :: Word -> Natural
+bN_WN n
+  | n <= lookupTableMask = lookupTable ! n
+  | otherwise = bN_large (lookupTable ! lookupTableMask) (n-lookupTableMask)
   where
-    m = min n lookupTableMask
-    v = lookupTable ! m
+    bN_large :: Natural -> Word -> Natural
+    bN_large a n
+      | n <= lookupTableMask = (a * lookupTable ! n)
+      | otherwise = bN_large (a * lookupTable ! lookupTableMask) (n-lookupTableMask)
+      where
+        m = min n lookupTableMask
+        v = lookupTable ! m
 
 
 divBN :: (Integral a, Bits a) => a -> Word -> a
