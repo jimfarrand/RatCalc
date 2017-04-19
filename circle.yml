@@ -9,7 +9,7 @@ dependencies:
   override:
     - stack setup
     - stack build
-    - stack test --no-run-tests
+    - stack test --coverage --no-run-tests
 
 test:
   override:
