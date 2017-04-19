@@ -13,6 +13,6 @@ dependencies:
 
 test:
   override:
-    - stack test --coverage --test-arguments "-a10000 -o $CIRCLE_ARTIFACTS/RatCalc-Tests.txt --print-cpu-time"
+    - stack test --coverage --test-arguments "-a1000 -o $CIRCLE_ARTIFACTS/RatCalc-Tests.txt --print-cpu-time"
   post:
     - cp -a ~/RatCalc/.stack-work/install/x86_64-linux/*/*/hpc $CIRCLE_ARTIFACTS/coverage
