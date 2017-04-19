@@ -32,6 +32,9 @@ spec = do
                 \x y -> approximate ((rational x) + (rational y)) == fromRational (x+y)
             it "can add the negation of a rational to give a value that approximates to 0" $ property $
                 \x -> approximate ((rational x) + (negate (rational x))) == 0
+        describe "-" $ do
+            it "can subtract rationals so they approximate to the correct Double" $ property $
+                \x y -> approximate ((rational x) - (rational y)) == fromRational (x-y)
         describe "negate" $ do
             it "can negate rationals so they approximate to the correct Double" $ property $
                 \x -> approximate (negate (rational x)) == fromRational (negate x)
