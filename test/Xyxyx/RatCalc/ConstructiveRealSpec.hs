@@ -10,4 +10,8 @@ spec = do
             \r -> approximate (rational r) == fromRational r
         it "added rationals approximate to correct value" $ property $
             \x y -> approximate ((rational x) + (rational y)) == fromRational (x+y)
+        it "negated rationals approximate to correct value" $ property $
+            \x -> approximate (negate (rational x)) == fromRational (negate x)
+        it "adding negation approximates to zero" $ property $
+            \x -> approximate ((rational x) + (negate (rational x))) == 0
 
