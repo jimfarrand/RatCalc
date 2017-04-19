@@ -48,3 +48,4 @@ instance Num CReal where
 
       add' n = round (((x (n+w)) + (y (n+w))) % bw)
 
+  negate _ = error "not implemented"
