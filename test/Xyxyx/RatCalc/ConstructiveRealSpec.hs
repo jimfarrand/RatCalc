@@ -21,6 +21,7 @@ module Xyxyx.RatCalc.ConstructiveRealSpec where
 import Test.Hspec
 import Test.QuickCheck
 import Xyxyx.RatCalc.ConstructiveReal
+import Data.Ratio
 
 spec = do
     describe "CReal" $ do
@@ -36,8 +37,14 @@ spec = do
             it "can subtract rationals so they approximate to the correct Double" $ property $
                 \x y -> approximate ((rational x) - (rational y)) == fromRational (x-y)
         describe "*" $ do
+            it "can multiply integers so they approximate to the correct Double" $ property $
+                \x y -> approximate ((fromInteger x) * (fromInteger y)) == fromInteger (x*y)
             it "can multiply rationals so they approximate to the correct Double" $ property $
                 \x y -> approximate ((rational x) * (rational y)) == fromRational (x*y)
+            it "can multiply small rationals so they approximate to the correct Double" $ property $
+                \(NonZero x) (NonZero y) -> approximate ((rational (1%x)) * (rational (1%y))) == fromRational (1%(x*y))
+            it "can multiply integers by small rationals so they approximate to the correct Double" $ property $
+                \x (NonZero y) -> approximate ((fromInteger x) * (rational (1%y))) == fromRational (x%y)
         describe "negate" $ do
             it "can negate rationals so they approximate to the correct Double" $ property $
                 \x -> approximate (negate (rational x)) == fromRational (negate x)
