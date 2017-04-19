@@ -98,8 +98,8 @@ instance Num CReal where
 
               find_p_left m
                 | abs (z m) <= 1 = max l min_p
-        	| otherwise = find_p_left (m-1)
-        	where
+                | otherwise = find_p_left (m-1)
+                where
                   l = n - (m+1) + v
 
   negate (CReal x) = CReal $ \n -> negate (x n)
