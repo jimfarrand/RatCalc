@@ -3,7 +3,7 @@ version:             0.5.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/jimfarrand/ratcalc#readme
-license:             GPL3
+license:             GPL-3
 license-file:        LICENSE
 author:              Jim Farrand
 maintainer:          jim.farrand-ratcalc@xyxyx.org
