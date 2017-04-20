@@ -103,3 +103,8 @@ instance Num CReal where
                   l = n - (m+1) + v
 
   negate (CReal x) = CReal $ \n -> negate (x n)
+
+instance Fractional CReal where
+  fromRational = rational
+  recip _ = error "(CReal./): not implemented"
+  _ / _ = error "(CReal./): not implemented"
