@@ -45,6 +45,11 @@ spec = do
                 \(NonZero x) (NonZero y) -> approximate ((rational (1%x)) * (rational (1%y))) == fromRational (1%(x*y))
             it "can multiply integers by small rationals so they approximate to the correct Double" $ property $
                 \x (NonZero y) -> approximate ((fromInteger x) * (rational (1%y))) == fromRational (x%y)
+            it "can multiply the inverse of a rational to give a value that approximates to 1" $ property $
+                \(NonZero x) -> approximate ((rational x) * (recip (rational x))) == 1
+        describe "/" $ do
+            it "can divide integers so they approximate to the correct Double" $ property $
+                \x (NonZero y) -> approximate ((fromInteger x) / (fromInteger y)) == fromRational (x%y)
         describe "negate" $ do
             it "can negate rationals so they approximate to the correct Double" $ property $
                 \x -> approximate (negate (rational x)) == fromRational (negate x)
